@@ -19,6 +19,7 @@ export function SummaryEditor({
   items,
   aiEnabled,
   reportLang,
+  demo,
 }: {
   projectId: string;
   initial: ProjectSummary;
@@ -26,6 +27,8 @@ export function SummaryEditor({
   items: SummaryInput[];
   aiEnabled: boolean;
   reportLang: Lang;
+  /** Sample data only: nothing is saved. */
+  demo?: boolean;
 }) {
   const { t } = useT();
   const [summary, setSummary] = useState(initial);
@@ -71,7 +74,7 @@ export function SummaryEditor({
 
   const save = () =>
     start(async () => {
-      const res = await saveSummary(projectId, summary, source ?? "manual");
+      const res = demo ? { ok: true as const, data: undefined } : await saveSummary(projectId, summary, source ?? "manual");
       if (res.ok) {
         setDirty(false);
         setSaved(true);

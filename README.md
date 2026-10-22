@@ -15,6 +15,15 @@ Web app for a consulting team to analyze client businesses with the frameworks f
 - Report: live preview, publish a read-only snapshot link, print / save as PDF
 - Thai and English UI; report language per project; AI can be turned off per project
 
+## Try it without setup
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000/demo. The demo walks through the real screens (question → framework → client link → summary → report) with a fictional business and saves nothing. It only exists in development.
+
 ## Setup
 
 1. **Supabase**: create a project, then run `supabase/migrations/0001_init.sql` in the SQL editor.

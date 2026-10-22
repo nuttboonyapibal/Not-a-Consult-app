@@ -22,11 +22,14 @@ export function QuestionWizard({
   stage,
   aiEnabled,
   preset,
+  onDemoCreate,
 }: {
   projectId: string;
   stage: Stage;
   aiEnabled: boolean;
   preset: string | null;
+  /** Demo mode: called instead of creating anything. */
+  onDemoCreate?: (frameworks: string[]) => void;
 }) {
   const { t, tx, lang } = useT();
   const router = useRouter();
@@ -74,6 +77,7 @@ export function QuestionWizard({
 
   function create() {
     setError(null);
+    if (onDemoCreate) return onDemoCreate(picked);
     start(async () => {
       const res = await createQuestion({ projectId, text: question, category, frameworks: picked });
       if (res.ok) router.push(`/projects/${projectId}/analyses/${res.data.analysisId}`);

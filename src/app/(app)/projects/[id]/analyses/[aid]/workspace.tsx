@@ -43,18 +43,23 @@ export function Workspace({
   question,
   profile,
   aiEnabled,
+  demo,
 }: {
   projectId: string;
   analysis: Analysis;
   question: string;
   profile: Data;
   aiEnabled: boolean;
+  /** Sample data only: nothing is saved. */
+  demo?: boolean;
 }) {
   const { t, tx, lang } = useT();
   const router = useRouter();
   const def = getFramework(analysis.framework_key)!;
   const steps = stepsOf(def);
-  const { data, setField, state } = useAutosave(analysis.data, (patch) => patchAnalysis(analysis.id, patch));
+  const { data, setField, state } = useAutosave(analysis.data, (patch) =>
+    demo ? Promise.resolve({ ok: true as const, data: undefined }) : patchAnalysis(analysis.id, patch),
+  );
   const [mode, setMode] = useState<"fill" | "view">("fill");
   const [stepIndex, setStepIndex] = useState(0);
   const [status, setStatus] = useState(analysis.status);
@@ -121,6 +126,7 @@ export function Workspace({
 
   const changeStatus = (next: typeof status) =>
     start(async () => {
+      if (demo) return setStatus(next);
       const res = await setAnalysisStatus(projectId, analysis.id, next);
       if (res.ok) setStatus(next);
     });
@@ -157,7 +163,7 @@ export function Workspace({
     <div>
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <Link href={`/projects/${projectId}`} className="text-sm text-muted hover:text-ink">
+          <Link href={demo ? "/demo" : `/projects/${projectId}`} className="text-sm text-muted hover:text-ink">
             ← {t("ws.question")}: {question}
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -310,7 +316,7 @@ export function Workspace({
                   )}
                 </div>
               ) : (
-                <p className="text-xs leading-relaxed text-muted">{t("ws.aiOff")}</p>
+                <p className="text-xs leading-relaxed text-muted">{t(demo ? "demo.aiNote" : "ws.aiOff")}</p>
               )}
             </Card>
 
@@ -340,19 +346,21 @@ export function Workspace({
               <ChecksList checks={checks} onSelect={goToField} />
             </Card>
 
-            <button
-              type="button"
-              className="w-full text-center text-xs text-faint hover:text-err"
-              onClick={() => {
-                if (!confirm(t("common.confirmDelete"))) return;
-                start(async () => {
-                  await deleteAnalysis(projectId, analysis.id);
-                  router.push(`/projects/${projectId}`);
-                });
-              }}
-            >
-              {t("ws.deleteAnalysis")}
-            </button>
+            {!demo && (
+              <button
+                type="button"
+                className="w-full text-center text-xs text-faint hover:text-err"
+                onClick={() => {
+                  if (!confirm(t("common.confirmDelete"))) return;
+                  start(async () => {
+                    await deleteAnalysis(projectId, analysis.id);
+                    router.push(`/projects/${projectId}`);
+                  });
+                }}
+              >
+                {t("ws.deleteAnalysis")}
+              </button>
+            )}
           </aside>
         </div>
       )}

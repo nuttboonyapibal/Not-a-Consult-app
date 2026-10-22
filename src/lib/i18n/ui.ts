@@ -19,6 +19,11 @@ export const UI = {
     th: "สำหรับทีม consult เท่านั้น ลูกค้าเข้าผ่านลิงก์ที่ทีมส่งให้",
     en: "For the consulting team only. Clients use the link the team sends them.",
   },
+  "login.notConfigured": {
+    th: "ยังไม่ได้เชื่อม Supabase จึงยัง login ไม่ได้ ดูขั้นตอนตั้งค่าใน README.md",
+    en: "Supabase isn't connected yet, so sign-in won't work. See README.md for setup.",
+  },
+  "login.demo": { th: "ดูตัวอย่างการใช้งาน", en: "See the demo" },
   "login.error": { th: "เข้าสู่ระบบไม่สำเร็จ ลองอีกครั้ง", en: "Sign-in failed. Please try again." },
   "noAccess.title": { th: "ยังไม่มีสิทธิ์เข้าใช้งาน", en: "No access yet" },
   "noAccess.body": {
@@ -297,6 +302,40 @@ export const UI = {
   "settings.you": { th: "คุณ", en: "you" },
 
   "lang.switch": { th: "English", en: "ภาษาไทย" },
+
+  "demo.badge": { th: "โหมดตัวอย่าง · ข้อมูลสมมติ ไม่บันทึกจริง", en: "Demo · fictional data, nothing is saved" },
+  "demo.aiNote": {
+    th: "โหมดตัวอย่างไม่ได้เรียก AI จริง ในแอพจริงปุ่มนี้จะร่างคำตอบหรือตรวจงานให้",
+    en: "The demo doesn't call AI. In the real app these buttons draft answers or review the work.",
+  },
+  "demo.wizard": { th: "ตั้งคำถาม", en: "Ask the question" },
+  "demo.wizardBody": {
+    th: "พิมพ์คำถามธุรกิจที่ต้องตอบ แอพเดาหมวดและแนะนำ framework ตามระยะธุรกิจ ลองพิมพ์ \"ลูกค้าแต่ละรายกำไรไหม ค่าโฆษณาคุ้มไหม\" แล้วกดถัดไป",
+    en: "Type the business question. The app guesses the category and suggests frameworks for the business stage. Try \"Is each customer profitable? Are ads worth it?\" and press Next.",
+  },
+  "demo.workspace": { th: "กรอก framework", en: "Fill the framework" },
+  "demo.workspaceBody": {
+    th: "กรอกทีละขั้นตามแถบซ้าย ด้านขวามีวิธีใช้ กับดัก และการตรวจอัตโนมัติที่อัปเดตทันทีที่พิมพ์ กด \"ผลลัพธ์\" เพื่อดูภาพสรุป",
+    en: "Fill it step by step from the left. The right side shows how to use it, the trap, and checks that update as you type. Press \"Result\" to see the picture.",
+  },
+  "demo.fill": { th: "ลูกค้ากรอกผ่านลิงก์", en: "Client fills via link" },
+  "demo.fillBody": {
+    th: "ทีมสร้างลิงก์ในแท็บ \"ลิงก์ลูกค้า\" เลือกส่วนที่ให้กรอก ลูกค้าเปิดลิงก์โดยไม่ต้อง login เห็นเฉพาะส่วนนั้น และข้อมูลไหลเข้า framework ของทีม",
+    en: "The team creates a link in \"Client links\" and picks the sections. The client opens it without logging in, sees only those parts, and the answers flow into the team's framework.",
+  },
+  "demo.summary": { th: "สรุปผล", en: "Summarize" },
+  "demo.summaryBody": {
+    th: "รวมผลทุก framework เป็น executive summary การตัดสินใจกับสมมติฐาน และ action plan ร่างจากข้อมูลหรือให้ AI ร่าง แล้วแก้ได้ทุกช่อง",
+    en: "Combine every framework into an executive summary, decisions and hypotheses, and an action plan. Draft from the data or with AI, then edit anything.",
+  },
+  "demo.report": { th: "Report ให้ลูกค้า", en: "Client report" },
+  "demo.reportBody": {
+    th: "กด Publish เพื่อได้ลิงก์ให้ลูกค้าดูอย่างเดียว หรือพิมพ์ / บันทึก PDF นี่คือหน้าที่ลูกค้าจะเห็น",
+    en: "Publish to get a read-only link for the client, or print / save as PDF. This is what the client sees.",
+  },
+  "demo.pickFramework": { th: "เลือก framework:", en: "Framework:" },
+  "demo.startEmpty": { th: "เริ่มจากว่าง", en: "Start empty" },
+  "demo.showFilled": { th: "ดูแบบกรอกแล้ว", en: "Show filled" },
 } as const satisfies Record<string, L>;
 
 export type UiKey = keyof typeof UI;

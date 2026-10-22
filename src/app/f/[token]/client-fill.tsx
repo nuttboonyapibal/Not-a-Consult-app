@@ -14,6 +14,8 @@ import type { ClientLinkView } from "@/lib/types";
 
 type Register = (flush: () => Promise<void>) => () => void;
 
+const demoSave = () => Promise.resolve({ ok: true as const, data: undefined });
+
 function useRegisteredAutosave(initial: Data, save: (patch: Data) => ReturnType<typeof saveFill>, register: Register) {
   const autosave = useAutosave(initial, save);
   const { flush } = autosave;
@@ -21,9 +23,21 @@ function useRegisteredAutosave(initial: Data, save: (patch: Data) => ReturnType<
   return autosave;
 }
 
-function ProfileSection({ token, fields, initial, register }: { token: string; fields: string[]; initial: Data; register: Register }) {
+function ProfileSection({
+  token,
+  fields,
+  initial,
+  register,
+  demo,
+}: {
+  token: string;
+  fields: string[];
+  initial: Data;
+  register: Register;
+  demo?: boolean;
+}) {
   const { t } = useT();
-  const { data, setField, state } = useRegisteredAutosave(initial, (patch) => saveFill(token, null, patch), register);
+  const { data, setField, state } = useRegisteredAutosave(initial, (patch) => (demo ? demoSave() : saveFill(token, null, patch)), register);
   return (
     <Card className="p-6">
       <div className="mb-5 flex items-center justify-between gap-2">
@@ -39,10 +53,20 @@ function ProfileSection({ token, fields, initial, register }: { token: string; f
   );
 }
 
-function AnalysisSection({ token, item, register }: { token: string; item: ClientLinkView["analyses"][number]; register: Register }) {
+function AnalysisSection({
+  token,
+  item,
+  register,
+  demo,
+}: {
+  token: string;
+  item: ClientLinkView["analyses"][number];
+  register: Register;
+  demo?: boolean;
+}) {
   const { t, tx } = useT();
   const def = getFramework(item.framework_key);
-  const { data, setField, state } = useRegisteredAutosave(item.data, (patch) => saveFill(token, item.id, patch), register);
+  const { data, setField, state } = useRegisteredAutosave(item.data, (patch) => (demo ? demoSave() : saveFill(token, item.id, patch)), register);
   if (!def) return null;
   const steps = def.steps
     .map((s) => ({ ...s, fields: s.fields.filter((f) => item.fields.includes(f.key)) }))
@@ -76,7 +100,7 @@ function AnalysisSection({ token, item, register }: { token: string; item: Clien
   );
 }
 
-export function ClientFill({ token, view }: { token: string; view: ClientLinkView }) {
+export function ClientFill({ token, view, demo }: { token: string; view: ClientLinkView; demo?: boolean }) {
   const { t } = useT();
   const [submitted, setSubmitted] = useState(!!view.submitted_at);
   const [error, setError] = useState<string | null>(null);
@@ -103,10 +127,10 @@ export function ClientFill({ token, view }: { token: string; view: ClientLinkVie
           <p className="mt-4 text-sm text-muted">{t("fill.intro")}</p>
         </div>
         {view.profile_fields.length > 0 && (
-          <ProfileSection token={token} fields={view.profile_fields} initial={view.profile} register={register} />
+          <ProfileSection token={token} fields={view.profile_fields} initial={view.profile} register={register} demo={demo} />
         )}
         {view.analyses.map((item) => (
-          <AnalysisSection key={item.id} token={token} item={item} register={register} />
+          <AnalysisSection key={item.id} token={token} item={item} register={register} demo={demo} />
         ))}
         <div className="rounded-xl border border-line bg-card p-5 text-center">
           {submitted ? (
@@ -119,7 +143,7 @@ export function ClientFill({ token, view }: { token: string; view: ClientLinkVie
                 onClick={() =>
                   start(async () => {
                     await Promise.all([...flushers.current].map((flush) => flush()));
-                    const res = await submitFill(token);
+                    const res = demo ? { ok: true as const, data: undefined } : await submitFill(token);
                     if (res.ok) setSubmitted(true);
                     else setError(res.error);
                   })

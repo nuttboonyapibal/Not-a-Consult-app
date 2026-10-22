@@ -1,12 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { supabaseKey, supabaseUrl } from "@/lib/supabase/env";
+import { isSupabaseConfigured, supabaseKey, supabaseUrl } from "@/lib/supabase/env";
 
-// Paths anyone may open: sign-in, client fill links and published reports.
-const PUBLIC_PREFIXES = ["/login", "/auth", "/f/", "/r/", "/no-access"];
+// Paths anyone may open: sign-in, client fill links, published reports and the
+// development-only demo.
+const PUBLIC_PREFIXES = ["/login", "/auth", "/f/", "/r/", "/no-access", "/demo"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const path = request.nextUrl.pathname;
+  const isPublic = PUBLIC_PREFIXES.some((p) => path.startsWith(p));
+
+  // Before Supabase is set up, only the sign-in page (with setup help) and the demo work.
+  if (!isSupabaseConfigured()) {
+    return isPublic ? response : NextResponse.redirect(new URL("/login", request.url));
+  }
 
   const supabase = createServerClient(supabaseUrl(), supabaseKey(), {
     cookies: {
@@ -26,8 +34,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PREFIXES.some((p) => path.startsWith(p));
   if (!user && !isPublic && !path.startsWith("/api/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
