@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
+// Every page depends on the signed-in user or a link token, so the app renders
+// dynamically instead of using Cache Components.
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
