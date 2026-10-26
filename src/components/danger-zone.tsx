@@ -38,11 +38,12 @@ export function DangerZone({
     start(async () => {
       setError(null);
       const res = await onDelete();
-      if (!res.ok) setError(res.error === NOT_ALLOWED ? notAllowed : res.error);
+      // A successful delete redirects, and the call may then resolve without a result.
+      if (res && !res.ok) setError(res.error === NOT_ALLOWED ? notAllowed : res.error);
     });
 
   return (
-    <Card className="border-err/30 p-5">
+    <Card id="delete" className="scroll-mt-20 border-err/30 p-5">
       <h3 className="font-semibold text-err">{title}</h3>
       <p className="mt-1 text-sm text-muted">{t("delete.willRemove")}</p>
       <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm">
