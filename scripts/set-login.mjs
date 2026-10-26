@@ -7,6 +7,7 @@
 // Reads .env.local; needs NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY.
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
+import { Writable } from "node:stream";
 import { createClient } from "@supabase/supabase-js";
 
 process.loadEnvFile(".env.local");
@@ -27,46 +28,47 @@ if (!stdin.isTTY) {
   process.exit(1);
 }
 
-async function ask(question) {
-  const rl = createInterface({ input: stdin, output: stdout });
+// Prompts go through readline; while `muted`, its echo is dropped and each
+// typed character shows as "*" instead.
+let muted = false;
+const output = new Writable({
+  write(chunk, encoding, callback) {
+    if (!muted) stdout.write(chunk, encoding);
+    callback();
+  },
+});
+output.columns = stdout.columns;
+
+async function ask(question, { hidden = false } = {}) {
+  const rl = createInterface({ input: stdin, output, terminal: true });
+  rl.on("SIGINT", () => {
+    stdout.write("\n");
+    process.exit(130);
+  });
+  let stars = 0;
+  const onKey = (text, key) => {
+    if (key?.name === "backspace") {
+      if (stars > 0) stdout.write("\b \b");
+      stars = Math.max(0, stars - 1);
+    } else if (text && text >= " ") {
+      stdout.write("*".repeat([...text].length));
+      stars += [...text].length;
+    }
+  };
   try {
-    return await rl.question(question);
+    if (!hidden) return await rl.question(question);
+    stdout.write(question);
+    muted = true;
+    stdin.on("keypress", onKey);
+    return await rl.question("");
   } finally {
+    stdin.off("keypress", onKey);
+    if (hidden) {
+      muted = false;
+      stdout.write("\n");
+    }
     rl.close();
   }
-}
-
-/** Reads a line without echoing it, so the password never shows on screen. */
-function askHidden(question) {
-  return new Promise((resolve) => {
-    stdout.write(question);
-    let value = "";
-    const finish = () => {
-      stdin.off("data", onData);
-      stdin.setRawMode(false);
-      stdin.pause();
-      stdout.write("\n");
-    };
-    const onData = (chunk) => {
-      // Drop bracketed-paste markers some terminals wrap pasted text in.
-      for (const ch of chunk.split("\u001b[200~").join("").split("\u001b[201~").join("")) {
-        if (ch === "\r" || ch === "\n") {
-          finish();
-          return resolve(value);
-        }
-        if (ch === "\u0003") {
-          finish();
-          process.exit(130);
-        }
-        if (ch === "\u007f" || ch === "\b") value = value.slice(0, -1);
-        else if (ch >= " ") value += ch;
-      }
-    };
-    stdin.setRawMode(true);
-    stdin.setEncoding("utf8");
-    stdin.resume();
-    stdin.on("data", onData);
-  });
 }
 
 try {
@@ -93,9 +95,9 @@ try {
   const typed = (await ask(`Username${current ? ` [${current}]` : ""}: `)).trim().toLowerCase() || current;
   if (!USERNAME.test(typed)) throw new Error("Username must be 3–30 characters: a–z, 0–9, dot, dash or underscore.");
 
-  const password = await askHidden("New password (8–72 characters): ");
+  const password = await ask("New password (8–72 characters, shown as *): ", { hidden: true });
   if (password.length < 8 || password.length > 72) throw new Error("Password must be 8–72 characters.");
-  if ((await askHidden("Type it again: ")) !== password) throw new Error("The passwords don't match.");
+  if ((await ask("Type it again: ", { hidden: true })) !== password) throw new Error("The passwords don't match.");
 
   const { error } = await admin.auth.admin.updateUserById(chosen.user.id, {
     email: loginEmail(typed),
