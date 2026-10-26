@@ -1,23 +1,21 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/frameworks/catalog";
-import { PROFILE_FIELDS } from "@/frameworks/profile";
 import { completion, getFramework } from "@/frameworks/registry";
-import { isFilled } from "@/frameworks/helpers";
 import { AnalysisStatusBadge } from "@/components/status";
 import { ButtonLink, Card, Empty, Progress } from "@/components/ui";
-import { getProject, getProjectContent } from "@/lib/dal";
+import { getProjectContent, getProjectProgress } from "@/lib/dal";
 import { getT } from "@/lib/i18n/server";
+import { ProjectSteps } from "./project-steps";
 import { QuestionMenu } from "./question-menu";
 
 export default async function ProjectOverview({ params }: PageProps<"/projects/[id]">) {
   const { id } = await params;
-  const { project } = await getProject(id);
-  const { questions, analyses } = await getProjectContent(id);
+  const [{ questions, analyses }, progress] = await Promise.all([getProjectContent(id), getProjectProgress(id)]);
   const { t, tx } = await getT();
-  const profileDone = PROFILE_FIELDS.filter((f) => isFilled(project.business_profile[f.key])).length / PROFILE_FIELDS.length;
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="space-y-6">
+      <ProjectSteps projectId={id} progress={progress} />
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-muted">{t("project.questions")}</h2>
@@ -71,26 +69,6 @@ export default async function ProjectOverview({ params }: PageProps<"/projects/[
           </div>
         )}
       </section>
-      <aside className="space-y-4">
-        <Card className="p-5">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-semibold">{t("project.profile")}</h2>
-            <span className="text-sm text-muted">{Math.round(profileDone * 100)}%</span>
-          </div>
-          <Progress value={profileDone} />
-          <p className="mt-3 text-xs leading-relaxed text-muted">{t("profile.intro")}</p>
-          <ButtonLink href={`/projects/${id}/profile`} variant="secondary" size="sm" className="mt-3 w-full">
-            {t("common.edit")}
-          </ButtonLink>
-        </Card>
-        <Card className="p-5">
-          <h2 className="mb-2 font-semibold">{t("project.links")}</h2>
-          <p className="text-xs leading-relaxed text-muted">{t("links.intro")}</p>
-          <ButtonLink href={`/projects/${id}/links`} variant="secondary" size="sm" className="mt-3 w-full">
-            {t("links.new")}
-          </ButtonLink>
-        </Card>
-      </aside>
     </div>
   );
 }

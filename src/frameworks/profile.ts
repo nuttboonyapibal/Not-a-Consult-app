@@ -55,3 +55,6 @@ export const PROFILE_FIELDS: (FieldDef & { key: ProfileKey })[] = [
     label: t("เป้าหมายใน 1–2 ปี", "Goals for the next 1–2 years"),
   },
 ];
+
+/** The facts frameworks reuse most; the project checklist asks for these first. */
+export const PROFILE_BASICS: ProfileKey[] = ["businessName", "offering", "targetCustomers", "revenueModel"];

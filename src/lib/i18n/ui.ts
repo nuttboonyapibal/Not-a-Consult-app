@@ -17,13 +17,19 @@ export const UI = {
   "login.google": { th: "เข้าสู่ระบบด้วย Google", en: "Continue with Google" },
   "login.or": { th: "หรือ", en: "or" },
   "login.email": { th: "อีเมล", en: "Email" },
-  "login.emailSend": { th: "ส่งลิงก์เข้าสู่ระบบ", en: "Email me a sign-in link" },
+  "login.emailSend": { th: "ส่งรหัสเข้าสู่ระบบ", en: "Email me a sign-in code" },
   "login.emailSending": { th: "กำลังส่ง…", en: "Sending…" },
-  "login.emailSent": {
-    th: "ส่งลิงก์ไปที่อีเมลแล้ว เปิดลิงก์ในเบราว์เซอร์นี้เพื่อเข้าสู่ระบบ",
-    en: "Check your inbox. Open the link in this browser to sign in.",
+  "login.codeSent": { th: "ส่งรหัสไปที่", en: "We sent a code to" },
+  "login.code": { th: "รหัส 6 หลักจากอีเมล", en: "6-digit code from the email" },
+  "login.verify": { th: "เข้าสู่ระบบ", en: "Sign in" },
+  "login.verifying": { th: "กำลังตรวจรหัส…", en: "Checking…" },
+  "login.codeFailed": { th: "รหัสไม่ถูกต้องหรือหมดอายุ ลองอีกครั้งหรือขอรหัสใหม่", en: "That code is wrong or has expired. Try again or get a new one." },
+  "login.linkNote": {
+    th: "หรือกดลิงก์ในอีเมล ลิงก์ใช้ได้เฉพาะในเบราว์เซอร์นี้ ส่วนรหัสใช้ได้ทุกเครื่อง",
+    en: "Or click the link in the email. The link only works in this browser; the code works anywhere.",
   },
-  "login.emailFailed": { th: "ส่งลิงก์ไม่สำเร็จ", en: "Couldn't send the link" },
+  "login.otherEmail": { th: "ใช้อีเมลอื่น หรือขอรหัสใหม่", en: "Use another email or get a new code" },
+  "login.emailFailed": { th: "ส่งรหัสไม่สำเร็จ", en: "Couldn't send the code" },
   "login.note": {
     th: "สำหรับทีม consult เท่านั้น ลูกค้าเข้าผ่านลิงก์ที่ทีมส่งให้",
     en: "For the consulting team only. Clients use the link the team sends them.",
@@ -115,6 +121,16 @@ export const UI = {
   "project.deleteProject": { th: "ลบโปรเจกต์", en: "Delete project" },
   "project.status": { th: "สถานะโปรเจกต์", en: "Project status" },
 
+  "steps.title": { th: "ขั้นตอนของโปรเจกต์", en: "Project steps" },
+  "steps.next": { th: "ขั้นถัดไป", en: "Next" },
+  "steps.allDone": { th: "ครบทุกขั้นแล้ว", en: "Every step is done" },
+  "steps.frameworks": { th: "กรอก framework", en: "Frameworks" },
+  "steps.noFrameworks": { th: "ยังไม่ได้เลือก", en: "None yet" },
+  "steps.doneCount": { th: "เสร็จ", en: "Done" },
+  "steps.written": { th: "เขียนแล้ว", en: "Written" },
+  "steps.notPublished": { th: "ยังไม่ publish", en: "Not published" },
+  "steps.outdated": { th: "แก้ไขหลัง publish", en: "Edited since publishing" },
+
   "profile.title": { th: "ข้อมูลธุรกิจพื้นฐาน", en: "Business basics" },
   "profile.intro": {
     th: "กรอกครั้งเดียว ทุก framework ในโปรเจกต์นี้ดึงไปใช้ได้",
@@ -123,17 +139,17 @@ export const UI = {
 
   "wizard.title": { th: "คำถามธุรกิจใหม่", en: "New business question" },
   "wizard.step1": { th: "คำถามที่ต้องตอบ", en: "The question" },
-  "wizard.step2": { th: "หมวดของคำถาม", en: "Question category" },
-  "wizard.step3": { th: "เลือก framework", en: "Pick frameworks" },
+  "wizard.step2": { th: "เลือก framework", en: "Pick frameworks" },
   "wizard.questionLabel": { th: "ตอนนี้ต้องตอบคำถามอะไร", en: "What question do you need to answer now?" },
   "wizard.questionHint": {
     th: "ระบุให้ชัด เช่น \"ทำไมลูกค้าไม่กลับมาซื้อซ้ำ\" ไม่ใช่ \"อยากโต\"",
     en: "Be specific, e.g. \"Why don't customers buy again?\" rather than \"we want to grow\".",
   },
   "wizard.categoryHint": {
-    th: "เลือกหมวดที่ตรงกับคำถาม แอพเดาให้จากคำในคำถามแล้ว",
-    en: "Pick the category that matches. The app has guessed from your words.",
+    th: "หมวดที่แอพเดาจากคำถาม เปลี่ยนได้ถ้าไม่ตรง",
+    en: "Category guessed from your question. Change it if it doesn't fit.",
   },
+  "wizard.allCategories": { th: "ทุกหมวด", en: "All categories" },
   "wizard.recommended": { th: "แนะนำ", en: "Recommended" },
   "wizard.pickHint": {
     th: "เลือก 1–2 ตัว ใช้น้อยแต่ลึกดีกว่าใช้หลายตัวแบบผิวเผิน",

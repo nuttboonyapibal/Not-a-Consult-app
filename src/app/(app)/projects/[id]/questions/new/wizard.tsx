@@ -44,13 +44,14 @@ export function QuestionWizard({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const recs = useMemo(() => (step >= 3 ? recommend(question, stage, category) : []), [step, question, stage, category]);
+  const recs = useMemo(() => (step === 2 ? recommend(question, stage, category) : []), [step, question, stage, category]);
   const recKeys = new Set([...recs.map((r) => r.framework.key), ...(ai?.picks.map((p) => p.key) ?? [])]);
 
   const toggle = (key: string) =>
     setPicked((p) => (p.includes(key) ? p.filter((k) => k !== key) : p.length >= MAX_PICKS ? p : [...p, key]));
 
-  const goToCategory = () => {
+  // The category is guessed from the question and shown as a filter the user can change.
+  const goToPick = () => {
     if (!category) setCategory(guessCategory(question));
     setStep(2);
   };
@@ -89,7 +90,7 @@ export function QuestionWizard({
     <div className="mx-auto max-w-3xl">
       <h2 className="mb-1 text-lg font-semibold">{t("wizard.title")}</h2>
       <ol className="mb-6 flex gap-2 text-xs">
-        {[t("wizard.step1"), t("wizard.step2"), t("wizard.step3")].map((label, i) => (
+        {[t("wizard.step1"), t("wizard.step2")].map((label, i) => (
           <li
             key={label}
             className={cn(
@@ -108,7 +109,7 @@ export function QuestionWizard({
           <p className="mb-3 text-xs text-muted">{t("wizard.questionHint")}</p>
           <Textarea id="q" rows={3} autoFocus value={question} onChange={(e) => setQuestion(e.target.value)} />
           <div className="mt-4 flex justify-end">
-            <Button disabled={!question.trim()} onClick={goToCategory}>
+            <Button disabled={!question.trim()} onClick={goToPick}>
               {t("common.next")} →
             </Button>
           </div>
@@ -116,35 +117,6 @@ export function QuestionWizard({
       )}
 
       {step === 2 && (
-        <Card className="p-6">
-          <p className="mb-1 font-medium">“{question}”</p>
-          <p className="mb-4 text-xs text-muted">{t("wizard.categoryHint")}</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => setCategory(c.key)}
-                className={cn(
-                  "rounded-lg border p-3 text-left transition-colors",
-                  category === c.key ? "border-accent bg-accent-soft/60" : "border-line hover:bg-paper",
-                )}
-              >
-                <div className="text-sm font-medium">{tx(c.question)}</div>
-                <div className="text-xs text-muted">{tx(c.name)}</div>
-              </button>
-            ))}
-          </div>
-          <div className="mt-5 flex justify-between">
-            <Button variant="ghost" onClick={() => setStep(1)}>
-              ← {t("common.back")}
-            </Button>
-            <Button onClick={() => setStep(3)}>{t("common.next")} →</Button>
-          </div>
-        </Card>
-      )}
-
-      {step === 3 && (
         <div className="space-y-4">
           <Card className="p-6">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -157,6 +129,28 @@ export function QuestionWizard({
                   ✦ {aiPending ? t("wizard.aiThinking") : t("wizard.askAi")}
                 </Button>
               )}
+            </div>
+            <div className="mb-4">
+              <div className="mb-1.5 text-xs text-muted">{t("wizard.categoryHint")}</div>
+              <div className="flex flex-wrap gap-1.5">
+                {[null, ...CATEGORIES.map((c) => c.key)].map((key) => {
+                  const c = CATEGORIES.find((x) => x.key === key);
+                  return (
+                    <button
+                      key={key ?? "all"}
+                      type="button"
+                      title={c ? tx(c.question) : undefined}
+                      onClick={() => setCategory(key)}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs transition-colors",
+                        category === key ? "border-accent bg-accent text-white" : "border-line text-muted hover:bg-paper hover:text-ink",
+                      )}
+                    >
+                      {c ? tx(c.name) : t("wizard.allCategories")}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             {aiError && <p className="mb-3 rounded-lg bg-err-soft px-3 py-2 text-sm text-err">{aiError}</p>}
             {ai?.refined && ai.refined.trim() !== question.trim() && (
@@ -214,11 +208,19 @@ export function QuestionWizard({
             )}
           </Card>
           {error && <p className="rounded-lg bg-err-soft px-3 py-2 text-sm text-err">{error}</p>}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => setStep(2)}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Button variant="ghost" onClick={() => setStep(1)}>
               ← {t("common.back")}
             </Button>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {picked.map((key) => (
+                <Badge key={key} tone="accent">
+                  {tx(getFramework(key)!.name)}
+                  <button type="button" className="ml-0.5 hover:text-ink" aria-label={`${t("common.remove")} ${tx(getFramework(key)!.name)}`} onClick={() => toggle(key)}>
+                    ×
+                  </button>
+                </Badge>
+              ))}
               {picked.length >= MAX_PICKS && <span className="text-xs text-muted">{t("wizard.tooMany")}</span>}
               <Button disabled={picked.length === 0 || pending} onClick={create}>
                 {t("wizard.create")} ({picked.length})
