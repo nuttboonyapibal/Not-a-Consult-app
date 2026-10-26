@@ -11,33 +11,6 @@ async function requireAdmin() {
   return ctx;
 }
 
-const Domain = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/, "Invalid domain");
-
-export async function updateDomains(raw: string): Promise<ActionResult> {
-  try {
-    const { supabase } = await requireAdmin();
-    const domains = [
-      ...new Set(
-        raw
-          .split(/[,\s]+/)
-          .map((d) => d.replace(/^@/, ""))
-          .filter(Boolean)
-          .map((d) => Domain.parse(d)),
-      ),
-    ];
-    const { error } = await supabase.from("app_settings").update({ allowed_domains: domains }).eq("id", 1);
-    if (error) throw new Error(error.message);
-    revalidatePath("/settings");
-    return ok(undefined);
-  } catch (e) {
-    return fail(e instanceof z.ZodError ? e.issues[0].message : e);
-  }
-}
-
 export async function updateMember(userId: string, patch: { role?: "admin" | "consultant"; active?: boolean }): Promise<ActionResult> {
   try {
     const { supabase, user } = await requireAdmin();

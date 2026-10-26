@@ -6,6 +6,7 @@ import { StagePicker } from "@/components/stage-picker";
 import { Button, Card, Input, Label, Select } from "@/components/ui";
 import { addMember, deleteProject, removeMember, updateProjectSettings } from "@/lib/actions/projects";
 import { useT } from "@/lib/i18n/client";
+import { displayName, handle } from "@/lib/auth/username";
 import type { Profile, Project } from "@/lib/types";
 
 const STATUSES = ["draft", "waiting_client", "analyzing", "summarized"] as const;
@@ -97,7 +98,7 @@ export function ProjectSettingsForm({
           {members.map((m) => (
             <li key={m.id} className="flex items-center justify-between py-2 text-sm">
               <span>
-                {m.full_name ?? m.email} <span className="text-muted">· {m.email}</span>
+                {displayName(m)} <span className="text-muted">· {handle(m)}</span>
               </span>
               {m.id !== project.created_by && (
                 <Button
@@ -123,7 +124,7 @@ export function ProjectSettingsForm({
               <option value="">{t("project.addMember")}</option>
               {others.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.full_name ?? p.email} ({p.email})
+                  {displayName(p)} ({handle(p)})
                 </option>
               ))}
             </Select>

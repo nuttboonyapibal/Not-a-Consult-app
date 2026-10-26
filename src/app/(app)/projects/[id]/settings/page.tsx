@@ -10,7 +10,7 @@ export default async function ProjectSettingsPage({ params }: PageProps<"/projec
   const { t } = await getT();
   const [{ data: members }, { data: team }] = await Promise.all([
     supabase.from("project_members").select("user_id").eq("project_id", id),
-    supabase.from("profiles").select("id, email, full_name, role, active").eq("active", true).order("email"),
+    supabase.from("profiles").select("id, email, username, full_name, role, active").eq("active", true).order("email"),
   ]);
   const memberIds = new Set((members ?? []).map((m) => m.user_id as string));
 

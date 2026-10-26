@@ -2,9 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured, supabaseKey, supabaseUrl } from "@/lib/supabase/env";
 
-// Paths anyone may open: sign-in, client fill links, published reports and the
-// development-only demo.
-const PUBLIC_PREFIXES = ["/login", "/auth", "/f/", "/r/", "/no-access", "/demo"];
+// Paths anyone may open: sign-in and sign-up, client fill links, published
+// reports and the development-only demo.
+const PUBLIC_PREFIXES = ["/login", "/signup", "/auth", "/f/", "/r/", "/no-access", "/demo"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

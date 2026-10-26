@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LangSwitch } from "@/components/lang-switch";
 import { NavLink } from "@/components/nav-link";
+import { displayName } from "@/lib/auth/username";
 import { requireMember } from "@/lib/dal";
 import { getT } from "@/lib/i18n/server";
 
@@ -23,7 +24,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <LangSwitch />
-            <span className="hidden text-sm text-muted md:inline">{profile.full_name ?? profile.email}</span>
+            <Link href="/account" className="hidden rounded-lg px-2.5 py-1 text-sm text-muted hover:bg-black/5 hover:text-ink md:inline" title={t("account.title")}>
+              {displayName(profile)}
+            </Link>
             <form action="/auth/signout" method="post">
               <button className="rounded-lg px-2.5 py-1 text-sm text-muted hover:bg-black/5 hover:text-ink">{t("nav.signOut")}</button>
             </form>

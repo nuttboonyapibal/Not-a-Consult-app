@@ -345,3 +345,24 @@ describe("AI usage log", () => {
     await expect(asUser(null, () => db.query("select public.ai_usage_summary($1)", [since]))).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("usernames", () => {
+  const signUpAs = (id: string, email: string, meta: Record<string, string>) =>
+    db.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [id, email, JSON.stringify(meta)]);
+
+  it("stores the username from sign-up, lowercased, and starts inactive", async () => {
+    const id = "00000000-0000-0000-0000-0000000000d1";
+    await signUpAs(id, "dana@project.supabase.co", { username: "Dana.K", full_name: "Dana" });
+    const [p] = await rows<{ username: string; full_name: string; active: boolean }>("select username, full_name, active from public.profiles where id = $1", [id]);
+    expect(p).toEqual({ username: "dana.k", full_name: "Dana", active: false });
+  });
+
+  it("rejects badly formed and duplicate usernames", async () => {
+    await expect(signUpAs("00000000-0000-0000-0000-0000000000d2", "x@project.supabase.co", { username: "a b" })).rejects.toThrow(/profiles_username_format/);
+    await expect(signUpAs("00000000-0000-0000-0000-0000000000d3", "y@project.supabase.co", { username: "dana.k" })).rejects.toThrow(/profiles_username_key/);
+  });
+
+  it("doesn't let members change usernames through the API", async () => {
+    await expect(asUser(ALICE, () => db.query("update public.profiles set username = 'alice2' where id = $1", [ALICE]))).rejects.toThrow(/permission denied/);
+  });
+});
