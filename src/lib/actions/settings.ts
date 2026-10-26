@@ -29,7 +29,7 @@ export async function updateDomains(raw: string): Promise<ActionResult> {
           .map((d) => Domain.parse(d)),
       ),
     ];
-    const { error } = await supabase.from("app_settings").update({ allowed_domains: domains, updated_at: new Date().toISOString() }).eq("id", 1);
+    const { error } = await supabase.from("app_settings").update({ allowed_domains: domains }).eq("id", 1);
     if (error) throw new Error(error.message);
     revalidatePath("/settings");
     return ok(undefined);

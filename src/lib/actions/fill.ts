@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createAnonClient } from "@/lib/supabase/server";
+import { toJson } from "@/lib/types";
 import { fail, ok, type ActionResult } from "./result";
 
 // Called from the client fill page without signing in. The database functions
@@ -15,8 +16,9 @@ export async function saveFill(token: string, analysisId: string | null, patch: 
     if (JSON.stringify(patch).length > MAX_PATCH_BYTES) throw new Error("Too much data at once");
     const { error } = await createAnonClient().rpc("client_link_save", {
       link_token: Token.parse(token),
-      analysis_id: analysisId === null ? null : z.uuid().parse(analysisId),
-      patch,
+      // null saves business-profile fields; generated types can't mark an argument nullable.
+      analysis_id: (analysisId === null ? null : z.uuid().parse(analysisId)) as string,
+      patch: toJson(patch),
     });
     if (error) throw new Error(error.message);
     return ok(undefined);

@@ -29,12 +29,11 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // Refreshes the session cookie when it is close to expiring.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verifies the session token against the project's signing keys (no Auth
+  // server round trip) and refreshes the cookie when it is close to expiring.
+  const { data } = await supabase.auth.getClaims();
 
-  if (!user && !isPublic && !path.startsWith("/api/")) {
+  if (!data?.claims && !isPublic && !path.startsWith("/api/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = path === "/" ? "" : `?next=${encodeURIComponent(path)}`;

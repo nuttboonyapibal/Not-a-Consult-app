@@ -7,10 +7,9 @@ import type { Analysis, Client, Profile, Project, Question, Summary } from "./ty
 /** The signed-in team member, or a redirect to sign-in / no-access. */
 export const requireMember = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) redirect("/login");
+  const user = { id: data.claims.sub };
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single<Profile>();
   if (!profile?.active) redirect("/no-access");
   return { supabase, user, profile };
@@ -37,4 +36,12 @@ export const getSummary = cache(async (projectId: string) => {
   const { supabase } = await requireMember();
   const { data } = await supabase.from("summaries").select("*").eq("project_id", projectId).maybeSingle<Summary>();
   return data;
+});
+
+/** AI requests per member and model over the last `days` days. RLS shows admins everyone. */
+export const getAiUsage = cache(async (days: number) => {
+  const { supabase } = await requireMember();
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const { data } = await supabase.rpc("ai_usage_summary", { since });
+  return data ?? [];
 });

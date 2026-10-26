@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getFramework } from "@/frameworks/registry";
 import { requireMember } from "@/lib/dal";
+import { toJson } from "@/lib/types";
 import { fail, ok, type ActionResult } from "./result";
 
 const QuestionInput = z.object({
@@ -87,7 +88,7 @@ export async function deleteAnalysis(projectId: string, analysisId: string): Pro
 export async function patchAnalysis(analysisId: string, patch: Record<string, unknown>): Promise<ActionResult> {
   try {
     const { supabase } = await requireMember();
-    const { error } = await supabase.rpc("patch_analysis", { aid: z.uuid().parse(analysisId), patch });
+    const { error } = await supabase.rpc("patch_analysis", { aid: z.uuid().parse(analysisId), patch: toJson(patch) });
     if (error) throw new Error(error.message);
     return ok(undefined);
   } catch (e) {

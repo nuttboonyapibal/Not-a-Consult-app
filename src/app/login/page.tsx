@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { LangSwitch } from "@/components/lang-switch";
+import { EmailLink } from "./email-link";
 import { GoogleButton } from "./google-button";
 
 export const metadata = { title: "Sign in" };
@@ -24,7 +25,15 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <h1 className="mb-4 text-lg font-semibold">{t("login.title")}</h1>
           {error && <p className="mb-4 rounded-lg bg-err-soft px-3 py-2 text-sm text-err">{t("login.error")}</p>}
           {isSupabaseConfigured() ? (
-            <GoogleButton next={nextPath} label={t("login.google")} />
+            <div className="space-y-4">
+              <GoogleButton next={nextPath} label={t("login.google")} />
+              <div className="flex items-center gap-3 text-xs text-muted">
+                <span className="h-px flex-1 bg-line" />
+                {t("login.or")}
+                <span className="h-px flex-1 bg-line" />
+              </div>
+              <EmailLink next={nextPath} />
+            </div>
           ) : (
             <p className="rounded-lg bg-warn-soft px-3 py-2 text-sm leading-relaxed text-warn">{t("login.notConfigured")}</p>
           )}

@@ -1,17 +1,17 @@
 import "server-only";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import type { Database } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
 import type { Analysis, Profile, Project, Question } from "@/lib/types";
-import { AiError } from "./client";
+import { AiError, generate, type AiUsage, type GenerateArgs } from "./client";
 
 async function requireAiMember() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new AiError("Not signed in", 401);
-  const { data: profile } = await supabase.from("profiles").select("active").eq("id", user.id).single<Pick<Profile, "active">>();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) throw new AiError("Not signed in", 401);
+  const { data: profile } = await supabase.from("profiles").select("active").eq("id", data.claims.sub).single<Pick<Profile, "active">>();
   if (!profile?.active) throw new AiError("No access", 403);
   return supabase;
 }
@@ -35,6 +35,44 @@ export async function loadAiAnalysis(analysisId: string) {
   const { project } = await loadAiProject(analysis.project_id);
   const { data: question } = await supabase.from("questions").select("text").eq("id", analysis.question_id).single<Pick<Question, "text">>();
   return { supabase, project, analysis, question: question?.text ?? "" };
+}
+
+/**
+ * One AI call, recorded in ai_requests with the model and token counts.
+ * A failed log write is reported but never fails the AI request itself.
+ */
+export async function generateLogged<S extends z.ZodType>(
+  supabase: SupabaseClient<Database>,
+  log: { projectId: string; kind: "recommend" | "assist" | "review" | "summary" },
+  args: GenerateArgs<S>,
+): Promise<z.infer<S>> {
+  let usage: AiUsage | undefined;
+  let error: string | null = null;
+  try {
+    const result = await generate(args);
+    usage = result.usage;
+    return result.output;
+  } catch (e) {
+    if (e instanceof AiError) usage = e.usage;
+    error = e instanceof Error ? e.message : String(e);
+    throw e;
+  } finally {
+    try {
+      const { error: logError } = await supabase.from("ai_requests").insert({
+        project_id: log.projectId,
+        kind: log.kind,
+        model: usage?.model ?? args.model,
+        input_tokens: usage?.input_tokens ?? 0,
+        output_tokens: usage?.output_tokens ?? 0,
+        cache_read_tokens: usage?.cache_read_tokens ?? 0,
+        ok: error === null,
+        error,
+      });
+      if (logError) console.error("Could not log AI request:", logError.message);
+    } catch (e) {
+      console.error("Could not log AI request:", e);
+    }
+  }
 }
 
 export function aiErrorResponse(e: unknown) {

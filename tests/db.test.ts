@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { beforeAll, describe, expect, it } from "vitest";
 
 // Runs the real migration on an in-memory Postgres with a minimal stand-in
@@ -7,6 +7,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 const SUPABASE_STUB = `
   create role anon nologin;
   create role authenticated nologin;
+  create role service_role nologin;
   create schema auth;
   create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}');
   create function auth.uid() returns uuid language sql stable as
@@ -51,7 +52,9 @@ const TOKEN = "t".repeat(40);
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(SUPABASE_STUB);
-  await db.exec(readFileSync("supabase/migrations/0001_init.sql", "utf8"));
+  for (const file of readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort()) {
+    await db.exec(readFileSync(`supabase/migrations/${file}`, "utf8"));
+  }
 
   await signUp(ADMIN, "boss@team.co");
   await db.query("update public.app_settings set allowed_domains = '{team.co}'");
@@ -134,9 +137,20 @@ describe("project access", () => {
     ).rejects.toThrow(/row-level security/);
   });
 
-  it("blocks anonymous table access", async () => {
-    expect(await asUser(null, () => rows("select id from public.analyses"))).toHaveLength(0);
-    expect(await asUser(null, () => rows("select token from public.client_links"))).toHaveLength(0);
+  it("gives anonymous callers no table access at all", async () => {
+    await expect(asUser(null, () => rows("select id from public.analyses"))).rejects.toThrow(/permission denied/);
+    await expect(asUser(null, () => rows("select token from public.client_links"))).rejects.toThrow(/permission denied/);
+  });
+
+  it("keeps the RLS helpers out of reach of anonymous callers", async () => {
+    await expect(asUser(null, () => rows("select private.is_admin()"))).rejects.toThrow(/permission denied/);
+  });
+
+  it("only lets members change their own name, not their email", async () => {
+    await asUser(ALICE, () => db.query("update public.profiles set full_name = 'Alice' where id = $1", [ALICE]));
+    await expect(
+      asUser(ALICE, () => db.query("update public.profiles set email = 'x@y.z' where id = $1", [ALICE])),
+    ).rejects.toThrow(/permission denied/);
   });
 
   it("merges patches key by key", async () => {
@@ -219,6 +233,10 @@ describe("client links", () => {
   it("does not let anonymous users call the internal resolver", async () => {
     await expect(asUser(null, () => db.query("select public.resolve_client_link($1)", [TOKEN]))).rejects.toThrow(/permission denied/);
   });
+
+  it("keeps the token functions on the anonymous key only", async () => {
+    await expect(asUser(ALICE, () => db.query("select public.client_link_get($1)", [TOKEN]))).rejects.toThrow(/permission denied/);
+  });
 });
 
 describe("published reports", () => {
@@ -233,5 +251,97 @@ describe("published reports", () => {
     await db.query("update public.report_publications set revoked_at = now()");
     const [{ r: gone }] = await asUser(null, () => rows<{ r: unknown }>("select public.public_report_get($1) r", [reportToken]));
     expect(gone).toBeNull();
+  });
+});
+
+describe("timestamps", () => {
+  it("keeps updated_at current", async () => {
+    await db.query("update public.clients set updated_at = now() - interval '1 day'");
+    await asUser(ALICE, () => db.query("update public.clients set industry = 'Food'"));
+    const [c] = await rows<{ fresh: boolean }>("select updated_at > now() - interval '1 minute' as fresh from public.clients");
+    expect(c.fresh).toBe(true);
+  });
+
+  it("moves a project up when work happens inside it", async () => {
+    await db.query("update public.projects set updated_at = now() - interval '1 day' where id = $1", [projectId]);
+    await asUser(ALICE, () => db.query("insert into public.questions (project_id, text) values ($1, 'Another question')", [projectId]));
+    const [p] = await rows<{ fresh: boolean }>("select updated_at > now() - interval '1 minute' as fresh from public.projects where id = $1", [
+      projectId,
+    ]);
+    expect(p.fresh).toBe(true);
+  });
+});
+
+describe("edit history", () => {
+  type Rev = { field_key: string; value_before: unknown; value_after: unknown; changed_by: string | null; client_link_id: string | null };
+  const revisions = (field: string) =>
+    rows<Rev>("select field_key, value_before, value_after, changed_by, client_link_id from public.analysis_revisions where analysis_id = $1 and field_key = $2 order by id", [
+      otherAnalysisId,
+      field,
+    ]);
+
+  it("records each changed field with who changed it", async () => {
+    await asUser(ALICE, () => db.query("select public.patch_analysis($1, $2)", [otherAnalysisId, JSON.stringify({ objective: "Grow" })]));
+    const [r] = await revisions("objective");
+    expect(r).toMatchObject({ value_before: null, value_after: "Grow", changed_by: ALICE, client_link_id: null });
+  });
+
+  it("folds quick autosaves of one field into one row", async () => {
+    await asUser(ALICE, () => db.query("select public.patch_analysis($1, $2)", [otherAnalysisId, JSON.stringify({ objective: "Grow fast" })]));
+    await asUser(ALICE, () => db.query("select public.patch_analysis($1, $2)", [otherAnalysisId, JSON.stringify({ objective: "Grow faster" })]));
+    const list = await revisions("objective");
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ value_before: null, value_after: "Grow faster" });
+  });
+
+  it("starts a new row after a pause", async () => {
+    await db.query("update public.analysis_revisions set updated_at = now() - interval '5 minutes'");
+    await asUser(ALICE, () => db.query("select public.patch_analysis($1, $2)", [otherAnalysisId, JSON.stringify({ objective: "Grow steadily" })]));
+    const list = await revisions("objective");
+    expect(list).toHaveLength(2);
+    expect(list[1]).toMatchObject({ value_before: "Grow faster", value_after: "Grow steadily" });
+  });
+
+  it("names the client link for client edits", async () => {
+    const [{ id: linkId }] = await rows<{ id: string }>("select id from public.client_links where token = $1", [TOKEN]);
+    await asUser(null, () => db.query("select public.client_link_save($1, $2, $3)", [TOKEN, analysisId, JSON.stringify({ motivation: "Eat well" })]));
+    const [r] = await rows<Rev>("select * from public.analysis_revisions where analysis_id = $1 and field_key = 'motivation'", [analysisId]);
+    expect(r).toMatchObject({ changed_by: null, client_link_id: linkId, value_after: "Eat well" });
+  });
+
+  it("lets project members read history, and nobody write it", async () => {
+    expect(await asUser(BOB, () => rows("select id from public.analysis_revisions"))).toHaveLength(0);
+    expect((await asUser(ALICE, () => rows("select id from public.analysis_revisions"))).length).toBeGreaterThan(0);
+    await expect(
+      asUser(ALICE, () => db.query("insert into public.analysis_revisions (analysis_id, project_id, field_key) values ($1, $2, 'x')", [analysisId, projectId])),
+    ).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("AI usage log", () => {
+  const log = (projectArg: string | null) =>
+    db.query("insert into public.ai_requests (project_id, kind, model, input_tokens, output_tokens) values ($1, 'assist', 'claude-sonnet-5-5', 100, 50)", [
+      projectArg,
+    ]);
+
+  it("lets members log requests for their projects only", async () => {
+    await asUser(ALICE, () => log(projectId));
+    await expect(asUser(BOB, () => log(projectId))).rejects.toThrow(/row-level security/);
+    await asUser(BOB, () => log(null));
+  });
+
+  it("shows people their own requests and admins everything", async () => {
+    expect(await asUser(ALICE, () => rows("select user_id from public.ai_requests"))).toEqual([{ user_id: ALICE }]);
+    expect(await asUser(ADMIN, () => rows("select id from public.ai_requests"))).toHaveLength(2);
+  });
+
+  it("totals usage per person under the same rules", async () => {
+    const since = "2000-01-01";
+    const summary = (uid: string) => asUser(uid, () => rows("select * from public.ai_usage_summary($1) order by user_id", [since]));
+    expect(await summary(ALICE)).toEqual([
+      { user_id: ALICE, model: "claude-sonnet-5-5", requests: 1, failed: 0, input_tokens: 100, output_tokens: 50, cache_read_tokens: 0 },
+    ]);
+    expect((await summary(ADMIN)).map((r) => r.user_id)).toEqual([ALICE, BOB]);
+    await expect(asUser(null, () => db.query("select public.ai_usage_summary($1)", [since]))).rejects.toThrow(/permission denied/);
   });
 });

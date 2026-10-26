@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireMember } from "@/lib/dal";
+import { toJson } from "@/lib/types";
 import { fail, ok, type ActionResult } from "./result";
 
 const ClientInput = z.object({
@@ -102,7 +103,7 @@ export async function deleteProject(projectId: string) {
 export async function patchProfile(projectId: string, patch: Record<string, unknown>): Promise<ActionResult> {
   try {
     const { supabase } = await requireMember();
-    const { error } = await supabase.rpc("patch_business_profile", { pid: projectId, patch });
+    const { error } = await supabase.rpc("patch_business_profile", { pid: projectId, patch: toJson(patch) });
     if (error) throw new Error(error.message);
     return ok(undefined);
   } catch (e) {

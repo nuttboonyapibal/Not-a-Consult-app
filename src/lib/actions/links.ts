@@ -6,7 +6,7 @@ import { z } from "zod";
 import { PROFILE_FIELDS } from "@/frameworks/profile";
 import { getFramework } from "@/frameworks/registry";
 import { requireMember } from "@/lib/dal";
-import type { Analysis, LinkScope } from "@/lib/types";
+import { toJson, type Analysis, type LinkScope } from "@/lib/types";
 import { fail, ok, type ActionResult } from "./result";
 
 const LinkInput = z.object({
@@ -46,7 +46,7 @@ export async function createLink(input: z.input<typeof LinkInput>): Promise<Acti
       token,
       label: body.label || null,
       message: body.message || null,
-      scope,
+      scope: toJson(scope),
       expires_at: body.expiresInDays ? new Date(Date.now() + body.expiresInDays * 86_400_000).toISOString() : null,
       created_by: user.id,
     });

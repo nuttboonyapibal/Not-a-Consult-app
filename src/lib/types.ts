@@ -1,5 +1,11 @@
 import type { Data, Lang, Stage } from "@/frameworks/types";
 import type { ActionPlan, DecisionItem, ExecSummary } from "@/frameworks/summary";
+import type { Json } from "./database.types";
+
+/** JSON columns hold the app's own shapes, which the generated `Json` type can't describe. */
+export function toJson(value: object): Json {
+  return value as Json;
+}
 
 export type Role = "admin" | "consultant";
 export type ProjectStatus = "draft" | "waiting_client" | "analyzing" | "summarized";

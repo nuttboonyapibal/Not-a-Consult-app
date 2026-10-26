@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { fieldsOf, getFramework, runChecks } from "@/frameworks/registry";
-import { AiError, generate, MODELS } from "@/lib/ai/client";
+import { AiError, MODELS } from "@/lib/ai/client";
 import { describeAnalysis, describeFramework, describeProfile, languageLine, SYSTEM_PROMPT } from "@/lib/ai/prompts";
-import { aiErrorResponse, loadAiAnalysis } from "@/lib/ai/route-helpers";
+import { aiErrorResponse, generateLogged, loadAiAnalysis } from "@/lib/ai/route-helpers";
 
 export const maxDuration = 60;
 
@@ -15,7 +15,7 @@ const Body = z.object({
 export async function POST(request: Request) {
   try {
     const body = Body.parse(await request.json());
-    const { project, analysis, question } = await loadAiAnalysis(body.analysisId);
+    const { supabase, project, analysis, question } = await loadAiAnalysis(body.analysisId);
     const def = getFramework(analysis.framework_key);
     if (!def) throw new AiError("Unknown framework", 400);
     const lang = project.report_lang;
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       ),
     });
 
-    const result = await generate({
+    const result = await generateLogged(supabase, { projectId: project.id, kind: "review" }, {
       model: MODELS.assist,
       system: SYSTEM_PROMPT,
       schema: Output,
