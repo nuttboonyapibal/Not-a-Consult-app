@@ -16,9 +16,31 @@ describe("registry", () => {
     for (const f of CATALOG) expect(CATEGORIES.map((c) => c.key)).toContain(f.category);
   });
 
-  it("structures the 7 most useful frameworks", () => {
+  it("structures the 7 most useful frameworks and the canvas group", () => {
     const structured = FRAMEWORKS.filter((f) => f.structured).map((f) => f.key).sort();
-    expect(structured).toEqual(["aarrr", "bmc", "issue-tree", "jtbd", "okrs", "playing-to-win", "unit-economics"]);
+    expect(structured).toEqual(
+      [
+        "aarrr",
+        "ansoff",
+        "balanced-scorecard",
+        "bcg",
+        "blue-ocean",
+        "bmc",
+        "five-forces",
+        "issue-tree",
+        "jtbd",
+        "lean-canvas",
+        "marketing-mix",
+        "mckinsey-7s",
+        "okrs",
+        "pestel",
+        "playing-to-win",
+        "seven-powers",
+        "swot-tows",
+        "unit-economics",
+        "vpc",
+      ].sort(),
+    );
     expect(FRAMEWORKS.filter((f) => f.topSeven).every((f) => f.structured)).toBe(true);
   });
 
@@ -168,5 +190,80 @@ describe("template summary", () => {
     expect(summary.action_plan.objective).toBe("ทำให้ลูกค้าออฟฟิศกลับมาสั่งทุกสัปดาห์");
     expect(summary.action_plan.keyResults).toHaveLength(3);
     expect(summary.action_plan.tasks.map((t) => t.task)).toContain("ประชุมทุกวันจันทร์");
+  });
+});
+
+describe("canvas group traps", () => {
+  const run = (key: string, data: Record<string, unknown>) => ids(runChecks(getFramework(key)!, data));
+
+  it("passes the examples on their own traps", () => {
+    for (const key of ["lean-canvas", "vpc", "swot-tows", "blue-ocean", "ansoff", "bcg", "pestel", "five-forces", "mckinsey-7s", "marketing-mix", "balanced-scorecard", "seven-powers", "bmc"]) {
+      const def = getFramework(key)!;
+      const errors = runChecks(def, def.example!).filter((c) => c.level === "error");
+      expect(errors, key).toEqual([]);
+    }
+  });
+
+  it("Lean Canvas: too many problems and a copyable advantage", () => {
+    expect(run("lean-canvas", { problem: ["a", "b", "c", "d"], unfairAdvantage: ["ราคาถูกกว่า"] })).toEqual(
+      expect.arrayContaining(["too-many-problems", "copyable-advantage"]),
+    );
+  });
+
+  it("VPC: guessed customer side, pains without relievers, unmatched colors", () => {
+    expect(run("vpc", { pains: [{ id: "p", text: "slow", tag: "rose" }], interviews: 1 })).toEqual(
+      expect.arrayContaining(["few-interviews", "pains-without-relievers", "unmatched-p"]),
+    );
+    expect(run("vpc", { pains: [{ id: "p", text: "slow", tag: "rose" }], painRelievers: [{ id: "r", text: "fast", tag: "rose" }], interviews: 6 })).not.toContain(
+      "unmatched-p",
+    );
+  });
+
+  it("SWOT: stopping at the list", () => {
+    expect(run("swot-tows", { strengths: ["x"] })).toContain("stopped-at-swot");
+    expect(run("swot-tows", { strengths: ["x"], so: ["y"] })).not.toContain("stopped-at-swot");
+  });
+
+  it("ERRC: only adding", () => {
+    expect(run("blue-ocean", { factors: ["price"], raise: ["speed"] })).toContain("only-adding");
+  });
+
+  it("Ansoff: diversifying before penetration", () => {
+    expect(run("ansoff", { chosen: "diversification", reason: "x" })).toContain("diversify-first");
+  });
+
+  it("BCG: a single product", () => {
+    expect(run("bcg", { stars: ["one"] })).toContain("single-unit");
+  });
+
+  it("PESTEL: no priorities, then too many", () => {
+    expect(run("pestel", { economic: ["x"] })).toContain("no-priority");
+    expect(run("pestel", { economic: ["x"], priority: ["a", "b", "c", "d"] })).toContain("too-many-priorities");
+  });
+
+  it("Five Forces: forgetting substitutes", () => {
+    expect(run("five-forces", { rivalryLevel: "high" })).toEqual(expect.arrayContaining(["no-substitutes", "unrated"]));
+  });
+
+  it("7S: changing only the structure", () => {
+    expect(run("mckinsey-7s", { strategy: ["x"], structure: ["y"] })).toContain("structure-only");
+  });
+
+  it("4P/7P: no positioning, missing service Ps", () => {
+    expect(run("marketing-mix", { businessType: "service", product: ["x"] })).toEqual(expect.arrayContaining(["no-positioning", "service-ps"]));
+  });
+
+  it("Balanced Scorecard: too many metrics", () => {
+    expect(run("balanced-scorecard", { financial: ["a", "b", "c", "d", "e"] })).toContain("too-many-metrics");
+  });
+
+  it("7 Powers: strong without evidence", () => {
+    expect(run("seven-powers", { branding: "strong" })).toContain("no-evidence-branding");
+  });
+
+  it("BMC: a colored segment without a matching value proposition", () => {
+    const data = { segments: [{ id: "s", text: "Offices", tag: "blue" }], valueProps: [{ id: "v", text: "Fast", tag: "blue" }] };
+    expect(run("bmc", data)).toContain("unlinked-s");
+    expect(run("bmc", { ...data, channels: [{ id: "c", text: "LINE", tag: "blue" }] })).not.toContain("unlinked-s");
   });
 });

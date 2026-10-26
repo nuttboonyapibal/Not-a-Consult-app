@@ -58,7 +58,10 @@ function Board({
   const grid = (
     <div
       style={style}
-      className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-line bg-line md:[grid-template-areas:var(--areas)] md:[grid-template-columns:var(--cols)]"
+      className={cn(
+        "grid grid-cols-1 md:[grid-template-areas:var(--areas)] md:[grid-template-columns:var(--cols)]",
+        board.cards ? "gap-3" : "gap-px overflow-hidden rounded-xl border border-line bg-line",
+      )}
     >
       {cells.map((cell) => {
         const many = cell.fields.length > 1;
@@ -66,7 +69,11 @@ function Board({
           <div
             key={cell.area}
             style={{ "--area": cell.area } as React.CSSProperties}
-            className={cn("min-h-24 p-3 md:[grid-area:var(--area)]", toneStyle[cell.tone ?? "neutral"])}
+            className={cn(
+              "min-h-24 p-3 md:[grid-area:var(--area)]",
+              toneStyle[cell.tone ?? "neutral"],
+              board.cards && "rounded-xl border border-line",
+            )}
           >
             {many && cell.title && <div className="mb-2 text-sm font-semibold">{cell.title[lang]}</div>}
             <div className={cn(many && "space-y-3")}>
@@ -74,7 +81,7 @@ function Board({
                 const f = fields.get(key);
                 if (!f) return null;
                 return (
-                  <Region key={key} fieldKey={key} label={f.label[lang]} edit={edit}>
+                  <Region key={key} fieldKey={key} label={(many && cell.title && f.short ? f.short : f.label)[lang]} edit={edit}>
                     <FieldBody field={f} value={data[key]} edit={edit} lang={lang} activeTag={edit?.activeTag} />
                   </Region>
                 );

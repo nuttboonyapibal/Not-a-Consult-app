@@ -48,6 +48,16 @@ const closing: Record<string, Data> = {
     _conclusion: "ชนะด้วยความเร็วและการเป็นสวัสดิการที่ HR จัดการง่าย ในออฟฟิศ 50–500 คน",
     _next: "สร้างทีมขายองค์กร 2 คน ภายใน Q1",
   },
+  "five-forces": {
+    _sources: ["คุยกับ HR 5 บริษัท", "ค่าคอมของแพลตฟอร์ม delivery"],
+    _conclusion: "น่าเล่นปานกลาง กำไรรั่วไปที่แพลตฟอร์ม delivery ถ้าขายตรงให้ HR",
+    _next: "ขายตรงกับ HR แทนการพึ่งแพลตฟอร์ม",
+  },
+  "swot-tows": {
+    _sources: ["เวิร์กช็อปกับทีมผู้บริหาร 20 ต.ค. 2026"],
+    _conclusion: "ใช้ความใกล้ลูกค้าและความสัมพันธ์กับ HR รุกตลาดสวัสดิการ",
+    _next: "จ้างเซลส์องค์กรเพิ่ม 1 คนใน Q1",
+  },
   okrs: {
     _sources: ["ข้อมูลตั้งต้นจาก POS และ LINE OA"],
     _conclusion: "Q1 โฟกัสการกลับมาสั่งซ้ำและลูกค้าองค์กร",
@@ -60,6 +70,7 @@ const filled = (key: string): Data => ({ ...(getFramework(key)?.example ?? {}), 
 export const DEMO_QUESTIONS = [
   { text: "ทำไมลูกค้าไม่กลับมาซื้อซ้ำ", frameworks: ["jtbd", "aarrr", "issue-tree"] },
   { text: "ลูกค้าแต่ละรายกำไรไหม และควรโตทางไหน", frameworks: ["unit-economics", "bmc", "playing-to-win"] },
+  { text: "ตลาดนี้น่าเล่นไหม และเราจะชนะด้วยอะไร", frameworks: ["five-forces", "swot-tows"] },
   { text: "ไตรมาสหน้าจะไปถึงไหน", frameworks: ["okrs"] },
 ];
 

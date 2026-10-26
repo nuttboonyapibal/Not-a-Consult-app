@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CATEGORIES } from "@/frameworks/catalog";
 import { FRAMEWORKS } from "@/frameworks/registry";
 import { LangSwitch } from "@/components/lang-switch";
 import { ReportView } from "@/components/report-view";
@@ -81,27 +82,32 @@ export function Demo({ screen, fw, empty }: { screen: Screen; fw: string; empty:
 
       {screen === "workspace" && (
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-          <div className="mb-6 flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-xs text-muted">{t("demo.pickFramework")}</span>
-            {STRUCTURED.map((f) => (
-              <Link
-                key={f.key}
-                href={`/demo?screen=workspace&fw=${f.key}${empty ? "&empty=1" : ""}`}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-xs",
-                  f.key === fw ? "border-accent bg-accent text-white" : "border-line bg-card hover:border-accent/40",
-                )}
-              >
-                {tx(f.name)}
-              </Link>
+          <div className="mb-6 space-y-1.5">
+            {CATEGORIES.filter((c) => STRUCTURED.some((f) => f.category === c.key)).map((c) => (
+              <div key={c.key} className="flex flex-wrap items-center gap-1.5">
+                <span className="w-40 shrink-0 text-xs text-muted">{tx(c.name)}</span>
+                {STRUCTURED.filter((f) => f.category === c.key).map((f) => (
+                  <Link
+                    key={f.key}
+                    href={`/demo?screen=workspace&fw=${f.key}${empty ? "&empty=1" : ""}`}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs",
+                      f.key === fw ? "border-accent bg-accent text-white" : "border-line bg-card hover:border-accent/40",
+                    )}
+                  >
+                    {tx(f.name)}
+                  </Link>
+                ))}
+              </div>
             ))}
-            <span className="mx-2 h-4 w-px bg-line" />
-            <Link
-              href={`/demo?screen=workspace&fw=${fw}${empty ? "" : "&empty=1"}`}
-              className="rounded-full border border-line bg-card px-3 py-1 text-xs hover:border-accent/40"
-            >
-              {empty ? t("demo.showFilled") : t("demo.startEmpty")}
-            </Link>
+            <div className="pt-1">
+              <Link
+                href={`/demo?screen=workspace&fw=${fw}${empty ? "" : "&empty=1"}`}
+                className="rounded-full border border-line bg-card px-3 py-1 text-xs hover:border-accent/40"
+              >
+                {empty ? t("demo.showFilled") : t("demo.startEmpty")}
+              </Link>
+            </div>
           </div>
           <Workspace
             key={`${fw}-${empty}`}

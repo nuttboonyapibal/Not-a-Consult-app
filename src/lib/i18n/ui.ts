@@ -375,7 +375,6 @@ export const UI = {
     th: "กด Publish เพื่อได้ลิงก์ให้ลูกค้าดูอย่างเดียว หรือพิมพ์ / บันทึก PDF นี่คือหน้าที่ลูกค้าจะเห็น",
     en: "Publish to get a read-only link for the client, or print / save as PDF. This is what the client sees.",
   },
-  "demo.pickFramework": { th: "เลือก framework:", en: "Framework:" },
   "demo.startEmpty": { th: "เริ่มจากว่าง", en: "Start empty" },
   "demo.showFilled": { th: "ดูแบบกรอกแล้ว", en: "Show filled" },
 } as const satisfies Record<string, L>;

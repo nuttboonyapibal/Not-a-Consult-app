@@ -1,4 +1,4 @@
-import { list, t } from "../helpers";
+import { list, listItems, t, taggedTexts } from "../helpers";
 import type { Check, Data, FieldDef, L, Lang, StructuredDef } from "./types";
 
 const block = (key: string, label: L, hint: L, example: L, extra: Partial<FieldDef> = {}): FieldDef => ({
@@ -149,9 +149,19 @@ export const bmc: StructuredDef = {
     },
   ],
   example: {
-    segments: ["พนักงานออฟฟิศย่านสีลม-สาทร", "ฝ่าย HR ที่ดูแลสวัสดิการพนักงาน"],
-    valueProps: ["มื้อเที่ยงสุขภาพส่งถึงโต๊ะใน 15 นาที", "สวัสดิการอาหารที่ HR จัดการง่าย"],
-    channels: ["LINE OA", "ติดต่อ HR โดยตรง", "ไรเดอร์ของร้าน"],
+    segments: [
+      { id: "s1", text: "พนักงานออฟฟิศย่านสีลม-สาทร", tag: "blue" },
+      { id: "s2", text: "ฝ่าย HR ที่ดูแลสวัสดิการพนักงาน", tag: "violet" },
+    ],
+    valueProps: [
+      { id: "v1", text: "มื้อเที่ยงสุขภาพส่งถึงโต๊ะใน 15 นาที", tag: "blue" },
+      { id: "v2", text: "สวัสดิการอาหารที่ HR จัดการง่าย", tag: "violet" },
+    ],
+    channels: [
+      { id: "c1", text: "LINE OA", tag: "blue" },
+      { id: "c2", text: "ติดต่อ HR โดยตรง", tag: "violet" },
+      { id: "c3", text: "ไรเดอร์ของร้าน" },
+    ],
     relationships: ["สมาชิกรายเดือน", "แอดมินตอบใน 5 นาที"],
     revenue: ["ขายรายมื้อ 120 บาท", "แพ็กเกจบริษัทรายเดือน"],
     activities: ["เตรียมอาหารสดทุกเช้า", "จัดส่งรอบเที่ยง"],
@@ -191,6 +201,23 @@ export const bmc: StructuredDef = {
         field: "valueProps",
         message: t("มีกลุ่มลูกค้าแต่ยังไม่มีคุณค่าที่เสนอให้เขา", "There are segments but no value proposition for them."),
       });
+    }
+    // Link colors: each colored segment should have a value proposition and a
+    // channel of the same color (the "blocks filled separately" trap).
+    for (const segment of listItems(data, "segments")) {
+      if (!segment.tag || !segment.text.trim()) continue;
+      const missing = [BMC_BLOCKS.valueProps, BMC_BLOCKS.channels].filter((f) => taggedTexts(data, f.key, segment.tag!).length === 0);
+      if (missing.length) {
+        checks.push({
+          id: `unlinked-${segment.id}`,
+          level: "warn",
+          field: missing[0].key,
+          message: {
+            th: `กลุ่มลูกค้า "${segment.text}" ยังไม่มี${missing.map((f) => f.label.th).join("และ")}สีเดียวกัน`,
+            en: `Segment "${segment.text}" has no ${missing.map((f) => f.label.en.toLowerCase()).join(" or ")} of the same color.`,
+          },
+        });
+      }
     }
     if (!data.fitStory || (typeof data.fitStory === "string" && !data.fitStory.trim())) {
       checks.push({

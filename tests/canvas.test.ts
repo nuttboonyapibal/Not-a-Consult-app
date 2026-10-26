@@ -75,7 +75,7 @@ describe("grid canvases", () => {
   it("uses every grid area exactly by a cell", () => {
     for (const def of grids) {
       for (const board of def.canvas!.boards) {
-        const areas = new Set(board.areas.join(" ").split(/\s+/));
+        const areas = new Set(board.areas.join(" ").split(/\s+/).filter((a) => a !== "."));
         expect(new Set(board.cells.map((c) => c.area)), def.key).toEqual(areas);
         for (const row of board.areas) expect(row.split(/\s+/).length, `${def.key} row`).toBe(board.columns);
       }

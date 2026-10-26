@@ -8,6 +8,7 @@ import { FieldInput } from "@/components/fields/field-input";
 import { SaveIndicator } from "@/components/fields/save-indicator";
 import { useAutosave } from "@/components/fields/use-autosave";
 import { Button, Card } from "@/components/ui";
+import { FrameworkView } from "@/components/views/framework-view";
 import { saveFill, submitFill } from "@/lib/actions/fill";
 import { useT } from "@/lib/i18n/client";
 import type { ClientLinkView } from "@/lib/types";
@@ -64,8 +65,9 @@ function AnalysisSection({
   register: Register;
   demo?: boolean;
 }) {
-  const { t, tx } = useT();
+  const { t, tx, lang } = useT();
   const def = getFramework(item.framework_key);
+  const [preview, setPreview] = useState(false);
   const { data, setField, state } = useRegisteredAutosave(item.data, (patch) => (demo ? demoSave() : saveFill(token, item.id, patch)), register);
   if (!def) return null;
   const steps = def.steps
@@ -82,7 +84,16 @@ function AnalysisSection({
         </div>
         <SaveIndicator state={state} />
       </div>
-      <p className="mb-6 text-sm text-muted">{tx(def.howTo)}</p>
+      <p className="mb-3 text-sm text-muted">{tx(def.howTo)}</p>
+      <button type="button" onClick={() => setPreview((p) => !p)} className="mb-6 text-sm font-medium text-accent hover:underline">
+        {preview ? t("canvas.hidePreview") : `${t("canvas.preview")} →`}
+      </button>
+      {preview && (
+        <div className="mb-8 rounded-xl border border-line bg-paper p-4">
+          <p className="mb-3 text-xs text-muted">{t("canvas.previewNote")}</p>
+          <FrameworkView frameworkKey={def.key} data={data} lang={lang} />
+        </div>
+      )}
       <div className="space-y-8">
         {steps.map((step) => (
           <section key={step.id}>

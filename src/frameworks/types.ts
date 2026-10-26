@@ -53,6 +53,8 @@ export interface FieldDef {
   key: string;
   type: FieldType;
   label: L;
+  /** Shorter label used inside a titled canvas cell. */
+  short?: L;
   hint?: L;
   example?: L;
   placeholder?: L;
@@ -121,6 +123,8 @@ export interface CanvasBoard {
   /** CSS grid-template-areas rows, one string per row. */
   areas: string[];
   cells: CanvasCell[];
+  /** Separate cards instead of one joined grid; "." areas stay empty. */
+  cards?: boolean;
   /** Axis labels for 2×2 boards: x = [left, right], y = [top, bottom]. */
   axes?: { x: [L, L]; y: [L, L]; xTitle?: L; yTitle?: L };
 }

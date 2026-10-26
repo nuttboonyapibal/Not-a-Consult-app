@@ -1,5 +1,17 @@
 import { CATALOG, CATEGORIES } from "./catalog";
 import { aarrr } from "./defs/aarrr";
+import { ansoff } from "./defs/ansoff";
+import { balancedScorecard } from "./defs/balanced-scorecard";
+import { bcg } from "./defs/bcg";
+import { blueOcean } from "./defs/blue-ocean";
+import { fiveForces } from "./defs/five-forces";
+import { leanCanvas } from "./defs/lean-canvas";
+import { marketingMix } from "./defs/marketing-mix";
+import { mckinsey7s } from "./defs/mckinsey-7s";
+import { pestel } from "./defs/pestel";
+import { sevenPowers } from "./defs/seven-powers";
+import { swotTows } from "./defs/swot-tows";
+import { vpc } from "./defs/vpc";
 import { bmc } from "./defs/bmc";
 import { issueTree } from "./defs/issue-tree";
 import { jtbd } from "./defs/jtbd";
@@ -10,7 +22,27 @@ import { unitEconomics } from "./defs/unit-economics";
 import { closingChecks, closingStep, isFilled, t } from "./helpers";
 import type { CategoryKey, Check, Data, FieldDef, FrameworkDef, FrameworkMeta, StepDef } from "./types";
 
-const STRUCTURED: StructuredDef[] = [jtbd, bmc, unitEconomics, playingToWin, aarrr, okrs, issueTree];
+const STRUCTURED: StructuredDef[] = [
+  jtbd,
+  bmc,
+  unitEconomics,
+  playingToWin,
+  aarrr,
+  okrs,
+  issueTree,
+  leanCanvas,
+  vpc,
+  swotTows,
+  blueOcean,
+  ansoff,
+  bcg,
+  pestel,
+  fiveForces,
+  mckinsey7s,
+  marketingMix,
+  balancedScorecard,
+  sevenPowers,
+];
 
 // Frameworks without a structured form yet get one general step built from the
 // cheat sheet's how-to. Phase 2 replaces these with structured forms.
