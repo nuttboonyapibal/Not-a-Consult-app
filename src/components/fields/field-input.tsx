@@ -118,7 +118,7 @@ function Control({
         </Select>
       );
     case "list":
-      return <ListInput id={id} value={Array.isArray(value) ? (value as string[]) : []} onChange={onChange} readOnly={readOnly} />;
+      return <ListInput id={id} value={value} onChange={onChange} readOnly={readOnly} />;
     case "table":
       return (
         <TableInput

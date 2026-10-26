@@ -1,5 +1,6 @@
 "use client";
 
+import { toItems } from "@/frameworks/helpers";
 import type { FieldDef, TableRow, TreeNode } from "@/frameworks/types";
 import { Button } from "@/components/ui";
 import { useT } from "@/lib/i18n/client";
@@ -10,8 +11,8 @@ function preview(field: FieldDef, value: unknown, lang: "th" | "en"): React.Reac
     case "list":
       return (
         <ul className="space-y-0.5">
-          {(value as string[]).map((v, i) => (
-            <li key={i}>· {v}</li>
+          {toItems(value).map((v) => (
+            <li key={v.id}>· {v.text}</li>
           ))}
         </ul>
       );

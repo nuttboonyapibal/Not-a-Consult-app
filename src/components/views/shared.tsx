@@ -1,13 +1,20 @@
+import { fieldsOf } from "@/frameworks/registry";
 import type { Data, FrameworkDef, Lang } from "@/frameworks/types";
+import type { EditApi } from "../canvas/edit-api";
+import { FieldBody } from "../canvas/field-body";
+import { Region } from "../canvas/region";
 import { cn } from "../ui";
+import { EMPTY } from "./empty";
 
 export interface ViewProps {
   def: FrameworkDef;
   data: Data;
   lang: Lang;
+  /** Present in the workspace: the view becomes editable in place. */
+  edit?: EditApi;
 }
 
-export const EMPTY = { th: "ยังไม่ได้กรอก", en: "Not filled yet" };
+export { EMPTY };
 
 export function Bullets({ items, lang, className }: { items: string[]; lang: Lang; className?: string }) {
   if (items.length === 0) return <p className="text-sm text-faint italic">{EMPTY[lang]}</p>;
@@ -38,4 +45,26 @@ export function fieldLabel(def: FrameworkDef, key: string, lang: Lang) {
     if (field) return field.label[lang];
   }
   return key;
+}
+
+/** One field of a view: labelled and read-only, or selectable and editable with `edit`. */
+export function Slot({
+  view,
+  field,
+  className,
+  hideLabel,
+}: {
+  view: ViewProps;
+  field: string;
+  className?: string;
+  hideLabel?: boolean;
+}) {
+  const { def, data, lang, edit } = view;
+  const f = fieldsOf(def).find((x) => x.key === field);
+  if (!f) return null;
+  return (
+    <Region fieldKey={field} label={f.label[lang]} edit={edit} className={className} hideLabel={hideLabel}>
+      <FieldBody field={f} value={data[field]} edit={edit} lang={lang} />
+    </Region>
+  );
 }

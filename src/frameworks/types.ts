@@ -95,6 +95,42 @@ export type Data = Record<string, unknown>;
 
 export type TableRow = { id: string } & Record<string, string | number | null>;
 
+/** Colors that link related items across cells, e.g. a segment and its value proposition. */
+export const TAG_COLORS = ["blue", "green", "amber", "rose", "violet", "teal"] as const;
+export type TagColor = (typeof TAG_COLORS)[number];
+
+/** One entry in a list field. Older data stores plain strings, which still read fine. */
+export interface ListItem {
+  id: string;
+  text: string;
+  tag?: TagColor;
+}
+
+export type CellTone = "neutral" | "accent" | "ok" | "warn" | "err";
+
+export interface CanvasCell {
+  area: string;
+  fields: string[];
+  title?: L;
+  tone?: CellTone;
+}
+
+export interface CanvasBoard {
+  title?: L;
+  columns: number;
+  /** CSS grid-template-areas rows, one string per row. */
+  areas: string[];
+  cells: CanvasCell[];
+  /** Axis labels for 2×2 boards: x = [left, right], y = [top, bottom]. */
+  axes?: { x: [L, L]; y: [L, L]; xTitle?: L; yTitle?: L };
+}
+
+export interface CanvasSpec {
+  boards: CanvasBoard[];
+  /** List field whose items name the link colors, e.g. customer segments. */
+  linkAnchor?: string;
+}
+
 export interface TreeNode {
   id: string;
   text: string;
@@ -128,6 +164,6 @@ export interface FrameworkDef extends FrameworkMeta {
   metrics?: (data: Data) => Metric[];
   /** Short plain-language bullets for summaries when AI is off. */
   summarize?: (data: Data, lang: Lang) => string[];
-  /** Extra settings for the shared views. */
-  canvas?: { columns: number; areas: string[] };
+  /** Layout for the shared grid canvas view. */
+  canvas?: CanvasSpec;
 }

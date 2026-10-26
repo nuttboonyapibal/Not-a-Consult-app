@@ -1,20 +1,56 @@
+"use client";
+
 import { krProgress } from "@/frameworks/defs/okrs";
 import { cellNum, cellStr, rows, str } from "@/frameworks/helpers";
 import { formatMetric } from "@/lib/format";
-import { EMPTY, type ViewProps } from "./shared";
+import { InlineText } from "../canvas/inline-inputs";
+import { Region } from "../canvas/region";
+import { EMPTY, fieldLabel, Slot, type ViewProps } from "./shared";
 
 const WORDS = {
   review: { th: "ทบทวน", en: "Review" },
 };
 
-export function OkrView({ data, lang }: ViewProps) {
+export function OkrView(view: ViewProps) {
+  const { def, data, lang, edit } = view;
   const krs = rows(data, "keyResults").filter((r) => cellStr(r, "text"));
   return (
     <div className="space-y-3">
       <div className="rounded-2xl bg-ink p-6 text-white">
-        <div className="mb-1 text-xs tracking-wide text-white/55 uppercase">Objective {str(data, "period") && `· ${str(data, "period")}`}</div>
-        <p className="text-xl leading-relaxed font-medium">{str(data, "objective") || <span className="text-white/40 italic">{EMPTY[lang]}</span>}</p>
+        {edit ? (
+          <div className="space-y-2">
+            <Region fieldKey="period" label={fieldLabel(def, "period", lang)} edit={edit} hideLabel>
+              <InlineText
+                singleLine
+                value={str(data, "period")}
+                onChange={(v) => edit.onChange("period", v)}
+                placeholder={`Objective · ${fieldLabel(def, "period", lang)}`}
+                label={fieldLabel(def, "period", lang)}
+                className="text-xs tracking-wide text-white/60 uppercase placeholder:text-white/40 focus:bg-white/10"
+              />
+            </Region>
+            <Region fieldKey="objective" label="Objective" edit={edit} hideLabel>
+              <InlineText
+                value={str(data, "objective")}
+                onChange={(v) => edit.onChange("objective", v)}
+                placeholder="Objective…"
+                label="Objective"
+                className="text-xl font-medium text-white placeholder:text-white/40 focus:bg-white/10"
+              />
+            </Region>
+          </div>
+        ) : (
+          <>
+            <div className="mb-1 text-xs tracking-wide text-white/55 uppercase">Objective {str(data, "period") && `· ${str(data, "period")}`}</div>
+            <p className="text-xl leading-relaxed font-medium">{str(data, "objective") || <span className="text-white/40 italic">{EMPTY[lang]}</span>}</p>
+          </>
+        )}
       </div>
+      {edit && (
+        <div className="rounded-xl border border-line bg-card p-3">
+          <Slot view={view} field="keyResults" />
+        </div>
+      )}
       <div className="space-y-2">
         {krs.map((r) => {
           const p = krProgress(r);
@@ -37,12 +73,16 @@ export function OkrView({ data, lang }: ViewProps) {
             </div>
           );
         })}
-        {krs.length === 0 && <p className="text-sm text-faint italic">{EMPTY[lang]}</p>}
+        {!edit && krs.length === 0 && <p className="text-sm text-faint italic">{EMPTY[lang]}</p>}
       </div>
-      {str(data, "reviewRhythm") && (
-        <p className="text-sm text-muted">
-          {WORDS.review[lang]}: {str(data, "reviewRhythm")}
-        </p>
+      {edit ? (
+        <Slot view={view} field="reviewRhythm" className="max-w-md" />
+      ) : (
+        str(data, "reviewRhythm") && (
+          <p className="text-sm text-muted">
+            {WORDS.review[lang]}: {str(data, "reviewRhythm")}
+          </p>
+        )
       )}
     </div>
   );

@@ -303,6 +303,48 @@ export const UI = {
 
   "lang.switch": { th: "English", en: "ภาษาไทย" },
 
+  "canvas.modeCanvas": { th: "Canvas", en: "Canvas" },
+  "canvas.modeForm": { th: "ฟอร์มทีละขั้น", en: "Step-by-step form" },
+  "canvas.order": { th: "ลำดับแนะนำ", en: "Suggested order" },
+  "canvas.clickToFill": { th: "คลิกเพื่อกรอก", en: "Click to fill" },
+  "canvas.add": { th: "เพิ่ม", en: "Add" },
+  "canvas.number": { th: "ตัวเลข", en: "Number" },
+  "canvas.next": { th: "ช่องถัดไป", en: "Next field" },
+  "canvas.allFilled": { th: "กรอกครบทุกช่องแล้ว", en: "Every field is filled" },
+  "canvas.filled": { th: "กรอกแล้ว", en: "Filled" },
+  "canvas.fields": { th: "ช่อง", en: "fields" },
+  "canvas.close": { th: "ปิด", en: "Close" },
+  "canvas.overview": { th: "ภาพรวม", en: "Overview" },
+  "canvas.pickHint": {
+    th: "คลิกช่องบน canvas เพื่อกรอก และดูคำแนะนำของช่องนั้นที่นี่",
+    en: "Click a field on the canvas to fill it and see its guidance here.",
+  },
+  "canvas.startHere": { th: "เริ่มที่ช่องแรกที่ยังว่าง", en: "Start at the first empty field" },
+  "canvas.draftField": { th: "ให้ AI ร่างช่องนี้", en: "AI: draft this field" },
+  "canvas.draftEmpty": { th: "ให้ AI ร่างช่องที่ยังว่าง", en: "AI: draft every empty field" },
+  "canvas.pending": { th: "คำแนะนำจาก AI ที่รอกดรับ", en: "AI suggestions waiting" },
+  "canvas.reviewEach": {
+    th: "คลิกช่องที่มี ✦ เพื่อดูและกดรับทีละช่อง",
+    en: "Click a field marked ✦ to review and accept it.",
+  },
+  "canvas.tag": { th: "สี", en: "Color" },
+  "canvas.noTag": { th: "ไม่มีสี", en: "No color" },
+  "canvas.moveTo": { th: "ย้ายไปช่อง", en: "Move to" },
+  "canvas.itemMenu": { th: "ตัวเลือกของรายการ", en: "Item options" },
+  "canvas.dragHint": { th: "ลากเพื่อย้าย", en: "Drag to move" },
+  "canvas.legend": { th: "สีเชื่อมโยง", en: "Link colors" },
+  "canvas.legendHint": {
+    th: "ติดสีเดียวกันให้รายการที่เกี่ยวข้องกัน เช่น กลุ่มลูกค้ากับคุณค่าที่เสนอให้ แล้วคลิกสีเพื่อดูความเชื่อมโยง",
+    en: "Give related items the same color, e.g. a segment and its value proposition, then click a color to see the links.",
+  },
+  "canvas.showAll": { th: "แสดงทั้งหมด", en: "Show all" },
+  "canvas.preview": { th: "ดูภาพรวม", en: "See the overview" },
+  "canvas.hidePreview": { th: "ซ่อนภาพรวม", en: "Hide the overview" },
+  "canvas.previewNote": {
+    th: "ภาพนี้แสดงเฉพาะส่วนที่คุณกรอก ส่วนอื่นทีมจะกรอกต่อ",
+    en: "This shows only the parts you fill. The team completes the rest.",
+  },
+
   "demo.badge": { th: "โหมดตัวอย่าง · ข้อมูลสมมติ ไม่บันทึกจริง", en: "Demo · fictional data, nothing is saved" },
   "demo.aiNote": {
     th: "โหมดตัวอย่างไม่ได้เรียก AI จริง ในแอพจริงปุ่มนี้จะร่างคำตอบหรือตรวจงานให้",
@@ -315,8 +357,8 @@ export const UI = {
   },
   "demo.workspace": { th: "กรอก framework", en: "Fill the framework" },
   "demo.workspaceBody": {
-    th: "กรอกทีละขั้นตามแถบซ้าย ด้านขวามีวิธีใช้ กับดัก และการตรวจอัตโนมัติที่อัปเดตทันทีที่พิมพ์ กด \"ผลลัพธ์\" เพื่อดูภาพสรุป",
-    en: "Fill it step by step from the left. The right side shows how to use it, the trap, and checks that update as you type. Press \"Result\" to see the picture.",
+    th: "คลิกช่องบน canvas เพื่อเพิ่ม แก้ หรือลบรายการได้ในช่องเลย เลขบนช่องคือลำดับแนะนำ แผงด้านขวาแสดงคำแนะนำ ตัวอย่าง และผลตรวจของช่องที่เลือก ลากรายการข้ามช่องได้ และกด ⋯ เพื่อติดสีเชื่อมโยง",
+    en: "Click a field on the canvas to add, edit or remove items right there. Numbers show the suggested order. The right panel shows guidance, an example and checks for the selected field. Drag items between fields, and use ⋯ to add link colors.",
   },
   "demo.fill": { th: "ลูกค้ากรอกผ่านลิงก์", en: "Client fills via link" },
   "demo.fillBody": {

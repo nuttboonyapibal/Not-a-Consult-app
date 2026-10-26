@@ -74,11 +74,28 @@ export const bmc: StructuredDef = {
   key: "bmc",
   view: "canvas",
   canvas: {
-    columns: 10,
-    areas: [
-      "partners partners activities activities valueProps valueProps relationships relationships segments segments",
-      "partners partners resources resources valueProps valueProps channels channels segments segments",
-      "costs costs costs costs costs revenue revenue revenue revenue revenue",
+    linkAnchor: "segments",
+    boards: [
+      {
+        columns: 10,
+        areas: [
+          "partners partners activities activities valueProps valueProps relationships relationships segments segments",
+          "partners partners resources resources valueProps valueProps channels channels segments segments",
+          "costs costs costs costs costs revenue revenue revenue revenue revenue",
+        ],
+        cells: [
+          { area: "partners", fields: ["partners"] },
+          { area: "activities", fields: ["activities"] },
+          { area: "resources", fields: ["resources"] },
+          { area: "valueProps", fields: ["valueProps"], tone: "accent" },
+          { area: "relationships", fields: ["relationships"] },
+          { area: "channels", fields: ["channels"] },
+          { area: "segments", fields: ["segments"], tone: "accent" },
+          { area: "costs", fields: ["costs"] },
+          { area: "revenue", fields: ["revenue"] },
+        ],
+      },
+      { columns: 1, areas: ["fit"], cells: [{ area: "fit", fields: ["fitStory"] }] },
     ],
   },
   steps: [

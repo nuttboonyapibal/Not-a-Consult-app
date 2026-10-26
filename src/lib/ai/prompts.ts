@@ -1,6 +1,6 @@
 import "server-only";
 import { CATALOG, CATEGORIES, STAGES } from "@/frameworks/catalog";
-import { isFilled } from "@/frameworks/helpers";
+import { isFilled, toItems } from "@/frameworks/helpers";
 import { PROFILE_FIELDS } from "@/frameworks/profile";
 import { stepsOf } from "@/frameworks/registry";
 import type { Data, FieldDef, FrameworkDef, Lang, TableRow, TreeNode } from "@/frameworks/types";
@@ -41,7 +41,9 @@ function formatValue(field: FieldDef, value: unknown, lang: Lang): string {
   if (!isFilled(value)) return "(empty)";
   switch (field.type) {
     case "list":
-      return (value as string[]).map((v) => `\n    - ${v}`).join("");
+      return toItems(value)
+        .map((v) => `\n    - ${v.text}${v.tag ? ` (color: ${v.tag})` : ""}`)
+        .join("");
     case "table":
       return (value as TableRow[])
         .map((r) => `\n    - ${(field.columns ?? []).map((c) => `${c.label[lang]}: ${r[c.key] ?? ""}`).join("; ")}`)

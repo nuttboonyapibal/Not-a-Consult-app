@@ -90,6 +90,26 @@ export function completion(def: FrameworkDef, data: Data): number {
   return fields.filter((f) => isFilled(data[f.key])).length / fields.length;
 }
 
+/** Field keys in the suggested filling order (the step order, closing step last). */
+export function fieldOrder(def: FrameworkDef): string[] {
+  return fieldsOf(def).map((f) => f.key);
+}
+
+export function fieldDef(def: FrameworkDef, key: string): FieldDef | undefined {
+  return fieldsOf(def).find((f) => f.key === key);
+}
+
+/** The next empty field after `after` in the suggested order, wrapping around. */
+export function nextEmptyField(def: FrameworkDef, data: Data, after?: string | null): string | null {
+  const order = fieldOrder(def);
+  const start = after ? order.indexOf(after) + 1 : 0;
+  for (let i = 0; i < order.length; i++) {
+    const key = order[(start + i) % order.length];
+    if (key !== after && !isFilled(data[key])) return key;
+  }
+  return null;
+}
+
 export function stepCompletion(step: StepDef, data: Data): number {
   if (step.fields.length === 0) return 0;
   return step.fields.filter((f) => isFilled(data[f.key])).length / step.fields.length;

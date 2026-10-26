@@ -1,14 +1,64 @@
-import type { Check, Data, FieldDef, L, StepDef, TableRow, TreeNode } from "./types";
+import { TAG_COLORS, type Check, type Data, type FieldDef, type L, type ListItem, type StepDef, type TableRow, type TagColor, type TreeNode } from "./types";
 
 export const str = (data: Data, key: string): string => {
   const v = data[key];
   return typeof v === "string" ? v.trim() : "";
 };
 
-export const list = (data: Data, key: string): string[] => {
-  const v = data[key];
-  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim() !== "") : [];
-};
+const isTag = (v: unknown): v is TagColor => typeof v === "string" && (TAG_COLORS as readonly string[]).includes(v);
+
+/**
+ * Reads a list value as items. Older data stores plain strings; those get ids
+ * from their position so they stay stable until the list is next saved.
+ */
+export function toItems(value: unknown, key = "item"): ListItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((v, i): ListItem[] => {
+    if (typeof v === "string") return [{ id: `${key}-${i}`, text: v }];
+    if (v && typeof v === "object" && typeof (v as ListItem).text === "string") {
+      const item = v as ListItem;
+      return [{ id: typeof item.id === "string" ? item.id : `${key}-${i}`, text: item.text, ...(isTag(item.tag) ? { tag: item.tag } : {}) }];
+    }
+    return [];
+  });
+}
+
+export const listItems = (data: Data, key: string): ListItem[] => toItems(data[key], key);
+
+/** The non-empty texts of a list field. */
+export const list = (data: Data, key: string): string[] =>
+  listItems(data, key)
+    .map((i) => i.text.trim())
+    .filter(Boolean);
+
+export const newItemId = () => Math.random().toString(36).slice(2, 10);
+
+export const newItem = (text: string, tag?: TagColor): ListItem => ({ id: newItemId(), text, ...(tag ? { tag } : {}) });
+
+/**
+ * Moves one item to another position, in the same list or another one.
+ * Returns the patch to save (one or two keys).
+ */
+export function moveItem(data: Data, from: { field: string; id: string }, to: { field: string; index: number }): Data {
+  const source = listItems(data, from.field);
+  const item = source.find((i) => i.id === from.id);
+  if (!item) return {};
+  const without = source.filter((i) => i.id !== from.id);
+  if (from.field === to.field) {
+    const fromIndex = source.indexOf(item);
+    const index = Math.max(0, Math.min(to.index > fromIndex ? to.index - 1 : to.index, without.length));
+    return { [from.field]: [...without.slice(0, index), item, ...without.slice(index)] };
+  }
+  const target = listItems(data, to.field);
+  const index = Math.max(0, Math.min(to.index, target.length));
+  return { [from.field]: without, [to.field]: [...target.slice(0, index), item, ...target.slice(index)] };
+}
+
+/** Items of a list field that carry the given color. */
+export const taggedTexts = (data: Data, key: string, tag: TagColor) =>
+  listItems(data, key)
+    .filter((i) => i.tag === tag && i.text.trim())
+    .map((i) => i.text.trim());
 
 export const num = (data: Data, key: string): number | null => {
   const v = data[key];

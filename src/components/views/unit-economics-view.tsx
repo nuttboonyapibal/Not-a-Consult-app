@@ -6,7 +6,7 @@ import { computeUnitEconomics } from "@/frameworks/defs/unit-economics";
 import type { CheckLevel } from "@/frameworks/types";
 import { formatMetric } from "@/lib/format";
 import { cn } from "../ui";
-import type { ViewProps } from "./shared";
+import { Slot, type ViewProps } from "./shared";
 
 const levelStyle: Record<CheckLevel, string> = {
   ok: "border-ok/30 bg-ok-soft",
@@ -25,7 +25,10 @@ const WORDS = {
   chart: { th: "ต้นทุนหาลูกค้าแยกช่องทาง", en: "Acquisition cost by channel" },
 };
 
-export function UnitEconomicsView({ def, data, lang }: ViewProps) {
+const INPUTS = ["arpu", "grossMargin", "churn"];
+
+export function UnitEconomicsView(view: ViewProps) {
+  const { def, data, lang, edit } = view;
   const metrics = def.metrics?.(data) ?? [];
   const u = computeUnitEconomics(data);
   const maxCac = u.ltv != null ? u.ltv / 3 : null;
@@ -34,7 +37,30 @@ export function UnitEconomicsView({ def, data, lang }: ViewProps) {
 
   return (
     <div className="space-y-4">
-      {scope && <div className="text-sm text-muted">{scope}</div>}
+      {edit ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-line bg-card p-3">
+              <Slot view={view} field="segment" />
+            </div>
+            <div className="rounded-xl border border-line bg-card p-3">
+              <Slot view={view} field="period" />
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {INPUTS.map((key) => (
+              <div key={key} className="rounded-xl border border-line bg-card p-3">
+                <Slot view={view} field={key} />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl border border-line bg-card p-3">
+            <Slot view={view} field="channels" />
+          </div>
+        </>
+      ) : (
+        scope && <div className="text-sm text-muted">{scope}</div>
+      )}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {metrics.map((m) => (
           <div key={m.key} className={cn("rounded-xl border border-line bg-card p-4", m.level && levelStyle[m.level])}>

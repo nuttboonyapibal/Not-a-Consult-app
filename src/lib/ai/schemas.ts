@@ -52,7 +52,9 @@ export function normalizeValues(fields: FieldDef[], values: Record<string, unkno
   const out: Record<string, unknown> = {};
   for (const f of fields) {
     const v = values[f.key];
-    if (f.type === "table" && Array.isArray(v)) out[f.key] = v.map((r) => ({ id: rid(), ...(r as object) }) as TableRow);
+    if (f.type === "list" && Array.isArray(v))
+      out[f.key] = v.filter((x): x is string => typeof x === "string" && x.trim() !== "").map((text) => ({ id: rid(), text }));
+    else if (f.type === "table" && Array.isArray(v)) out[f.key] = v.map((r) => ({ id: rid(), ...(r as object) }) as TableRow);
     else if (f.type === "tree" && v) out[f.key] = toTree(v as AiTree, true);
     else out[f.key] = v;
   }
