@@ -137,6 +137,28 @@ export const UI = {
   "project.addMember": { th: "เพิ่มสมาชิก", en: "Add member" },
   "project.deleteProject": { th: "ลบโปรเจกต์", en: "Delete project" },
   "project.status": { th: "สถานะโปรเจกต์", en: "Project status" },
+  "client.delete": { th: "ลบลูกค้า", en: "Delete client" },
+
+  "delete.willRemove": { th: "จะลบสิ่งต่อไปนี้ถาวร ย้อนกลับไม่ได้", en: "This permanently deletes the following. It can't be undone." },
+  "delete.typeName": { th: "พิมพ์ชื่อเพื่อยืนยัน:", en: "Type the name to confirm:" },
+  "delete.confirm": { th: "ลบถาวร", en: "Delete permanently" },
+  "delete.deleting": { th: "กำลังลบ…", en: "Deleting…" },
+  "delete.projectContent": {
+    th: "คำถาม {q} ข้อ, framework {a} ตัว, สรุปผล และประวัติการแก้ไขทั้งหมด",
+    en: "{q} questions, {a} frameworks, the summary and all edit history",
+  },
+  "delete.links": { th: "ลิงก์ลูกค้า {n} ลิงก์ ซึ่งจะใช้ไม่ได้ทันที", en: "{n} client links, which stop working at once" },
+  "delete.reports": { th: "report ที่ publish แล้ว {n} ฉบับ ซึ่งลูกค้าจะเปิดไม่ได้อีก", en: "{n} published reports, which clients can no longer open" },
+  "delete.clientProjects": { th: "โปรเจกต์ {n} โปรเจกต์ และทุกอย่างในโปรเจกต์", en: "{n} projects and everything in them" },
+  "delete.clientDetails": { th: "ข้อมูลของลูกค้ารายนี้", en: "This client's details" },
+  "delete.projectNotAllowed": {
+    th: "ลบไม่ได้ เฉพาะผู้สร้างโปรเจกต์หรือ admin เท่านั้นที่ลบได้",
+    en: "Only the project's creator or an admin can delete it.",
+  },
+  "delete.clientNotAllowed": {
+    th: "ลบไม่ได้ ลูกค้านี้มีโปรเจกต์ที่คนอื่นสร้างไว้ หรือคุณไม่ได้เป็นผู้สร้างลูกค้า ให้ admin ลบแทน",
+    en: "You can't delete this client: it has projects someone else created, or you didn't create it. Ask an admin.",
+  },
 
   "profile.title": { th: "ข้อมูลธุรกิจพื้นฐาน", en: "Business basics" },
   "profile.intro": {

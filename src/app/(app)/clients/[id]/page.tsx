@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DangerZone } from "@/components/danger-zone";
 import { Card, Empty, PageHeader } from "@/components/ui";
 import { StatusBadge } from "@/components/status";
+import { deleteClientAction } from "@/lib/actions/projects";
 import { requireMember } from "@/lib/dal";
 import { getT } from "@/lib/i18n/server";
 import type { Client, Project } from "@/lib/types";
@@ -9,7 +11,7 @@ import { NewProjectForm } from "./new-project-form";
 
 export default async function ClientPage({ params }: PageProps<"/clients/[id]">) {
   const { id } = await params;
-  const { supabase } = await requireMember();
+  const { supabase, profile: me } = await requireMember();
   const { t } = await getT();
   const { data: client } = await supabase.from("clients").select("*").eq("id", id).maybeSingle<Client>();
   if (!client) notFound();
@@ -47,8 +49,20 @@ export default async function ClientPage({ params }: PageProps<"/clients/[id]">)
             </div>
           )}
         </section>
-        <aside>
+        <aside className="space-y-6">
           <NewProjectForm clientId={client.id} />
+          {(me.role === "admin" || client.created_by === me.id) && (
+            <DangerZone
+              title={t("client.delete")}
+              name={client.name}
+              consequences={[
+                t("delete.clientDetails"),
+                ...(projects?.length ? [t("delete.clientProjects").replace("{n}", String(projects.length))] : []),
+              ]}
+              notAllowed={t("delete.clientNotAllowed")}
+              onDelete={deleteClientAction.bind(null, client.id)}
+            />
+          )}
         </aside>
       </div>
     </>

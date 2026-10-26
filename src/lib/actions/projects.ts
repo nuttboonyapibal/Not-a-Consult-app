@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireMember } from "@/lib/dal";
 import { toJson } from "@/lib/types";
-import { fail, ok, type ActionResult } from "./result";
+import { fail, NOT_ALLOWED, ok, type ActionResult } from "./result";
 
 const ClientInput = z.object({
   name: z.string().trim().min(1).max(200),
@@ -93,10 +93,33 @@ export async function updateProjectSettings(projectId: string, formData: FormDat
   }
 }
 
-export async function deleteProject(projectId: string) {
-  const { supabase } = await requireMember();
-  const { error } = await supabase.from("projects").delete().eq("id", projectId);
-  if (error) throw new Error(error.message);
+/** Deletes the project and everything in it, then returns to its client. */
+export async function deleteProject(projectId: string): Promise<ActionResult> {
+  let clientId: string;
+  try {
+    const { supabase } = await requireMember();
+    const { data, error } = await supabase.from("projects").delete().eq("id", z.uuid().parse(projectId)).select("client_id");
+    if (error) throw new Error(error.message);
+    if (!data.length) throw new Error(NOT_ALLOWED);
+    clientId = data[0].client_id;
+  } catch (e) {
+    return fail(e);
+  }
+  revalidatePath("/");
+  redirect(`/clients/${clientId}`);
+}
+
+/** Deletes the client and every project under it (see 0005_safe_client_delete.sql for who may). */
+export async function deleteClientAction(clientId: string): Promise<ActionResult> {
+  try {
+    const { supabase } = await requireMember();
+    const { data, error } = await supabase.from("clients").delete().eq("id", z.uuid().parse(clientId)).select("id");
+    if (error) throw new Error(error.message);
+    if (!data.length) throw new Error(NOT_ALLOWED);
+  } catch (e) {
+    return fail(e);
+  }
+  revalidatePath("/");
   redirect("/");
 }
 
