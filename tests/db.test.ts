@@ -345,3 +345,49 @@ describe("AI usage log", () => {
     await expect(asUser(null, () => db.query("select public.ai_usage_summary($1)", [since]))).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("deleting clients and projects", () => {
+  const newClient = (uid: string, name: string) =>
+    asUser(uid, async () => (await rows<{ id: string }>("insert into public.clients (name, created_by) values ($1, $2) returning id", [name, uid]))[0].id);
+  const newProject = (uid: string, clientId: string) =>
+    asUser(uid, async () =>
+      (await rows<{ id: string }>("insert into public.projects (client_id, name, created_by) values ($1, 'P', $2) returning id", [clientId, uid]))[0].id,
+    );
+  const deleted = (uid: string, table: "clients" | "projects", id: string) =>
+    asUser(uid, async () => (await rows(`delete from public.${table} where id = $1 returning id`, [id])).length);
+  const exists = async (table: string, id: string) => (await rows(`select 1 from public.${table} where id = $1`, [id])).length === 1;
+
+  it("lets a creator delete a client holding only their projects, with everything under it", async () => {
+    const client = await newClient(ALICE, "Solo");
+    const project = await newProject(ALICE, client);
+    const [q] = await asUser(ALICE, () => rows<{ id: string }>("insert into public.questions (project_id, text) values ($1, 'Q') returning id", [project]));
+    expect(await deleted(ALICE, "clients", client)).toBe(1);
+    expect(await exists("projects", project)).toBe(false);
+    expect(await exists("questions", q.id)).toBe(false);
+  });
+
+  it("stops a creator from deleting a client that holds someone else's project", async () => {
+    const client = await newClient(ALICE, "Shared");
+    const mine = await newProject(ALICE, client);
+    await asUser(ALICE, () => db.query("insert into public.project_members (project_id, user_id) values ($1, $2)", [mine, BOB]));
+    const bobs = await newProject(BOB, client);
+    expect(await deleted(ALICE, "clients", client)).toBe(0);
+    expect(await exists("projects", bobs)).toBe(true);
+    expect(await deleted(ADMIN, "clients", client)).toBe(1);
+    expect(await exists("projects", bobs)).toBe(false);
+  });
+
+  it("lets only a project's creator or an admin delete it", async () => {
+    const client = await newClient(ALICE, "Members");
+    const project = await newProject(ALICE, client);
+    await asUser(ALICE, () => db.query("insert into public.project_members (project_id, user_id) values ($1, $2)", [project, BOB]));
+    expect(await deleted(BOB, "projects", project)).toBe(0);
+    expect(await deleted(ALICE, "projects", project)).toBe(1);
+  });
+
+  it("never lets other consultants delete a client", async () => {
+    const client = await newClient(ALICE, "Private");
+    expect(await deleted(BOB, "clients", client)).toBe(0);
+    expect(await exists("clients", client)).toBe(true);
+  });
+});
