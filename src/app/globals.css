@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-paper: #f6f5f1;
+  --color-card: #ffffff;
+  --color-ink: #1c1e23;
+  --color-muted: #686c75;
+  --color-faint: #9a9da4;
+  --color-line: #e4e1da;
+  --color-accent: #2c47c9;
+  --color-accent-strong: #2038a8;
+  --color-accent-soft: #eaeefc;
+  --color-ok: #1d7f55;
+  --color-ok-soft: #e3f3eb;
+  --color-warn: #a86a12;
+  --color-warn-soft: #fbf0dc;
+  --color-err: #bf3b27;
+  --color-err-soft: #fbe7e3;
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-feature-settings: "kern";
+}
+
+/* Thai text needs a little more line height than Latin. */
+:lang(th) {
+  line-height: 1.65;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-break {
+    break-before: page;
+  }
 }
