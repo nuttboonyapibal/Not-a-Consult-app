@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 const SUPABASE_STUB = `
   create role anon nologin;
   create role authenticated nologin;
-  create role service_role nologin;
+  create role service_role nologin bypassrls;
   create schema auth;
   create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}');
   create function auth.uid() returns uuid language sql stable as
@@ -360,6 +360,17 @@ describe("usernames", () => {
   it("rejects badly formed and duplicate usernames", async () => {
     await expect(signUpAs("00000000-0000-0000-0000-0000000000d2", "x@project.supabase.co", { username: "a b" })).rejects.toThrow(/profiles_username_format/);
     await expect(signUpAs("00000000-0000-0000-0000-0000000000d3", "y@project.supabase.co", { username: "dana.k" })).rejects.toThrow(/profiles_username_key/);
+  });
+
+  it("lets the secret-key client set a username past the profile guard", async () => {
+    await db.exec("set role service_role");
+    try {
+      await db.query("update public.profiles set username = 'alice' where id = $1", [ALICE]);
+    } finally {
+      await db.exec("reset role");
+    }
+    const [p] = await rows<{ username: string }>("select username from public.profiles where id = $1", [ALICE]);
+    expect(p.username).toBe("alice");
   });
 
   it("doesn't let members change usernames through the API", async () => {
