@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getFramework, runChecks } from "@/frameworks/registry";
-import { AiError, generate, MODELS } from "@/lib/ai/client";
+import { AiError, MODELS } from "@/lib/ai/client";
 import { describeAnalysis, describeProfile, languageLine, SYSTEM_PROMPT } from "@/lib/ai/prompts";
-import { aiErrorResponse, loadAiProject } from "@/lib/ai/route-helpers";
+import { aiErrorResponse, generateLogged, loadAiProject } from "@/lib/ai/route-helpers";
 import type { Analysis, Question } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       })
       .join("\n\n");
 
-    const result = await generate({
+    const result = await generateLogged(supabase, { projectId: project.id, kind: "summary" }, {
       model: MODELS.summary,
       system: SYSTEM_PROMPT,
       schema: Output,

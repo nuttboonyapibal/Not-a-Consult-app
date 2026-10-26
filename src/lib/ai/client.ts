@@ -17,13 +17,30 @@ function getClient() {
   return client;
 }
 
+/** What one call used, for the AI usage log. */
+export interface AiUsage {
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+}
+
 export class AiError extends Error {
   constructor(
     message: string,
     public status = 500,
+    public usage?: AiUsage,
   ) {
     super(message);
   }
+}
+
+export interface GenerateArgs<S extends z.ZodType> {
+  model: string;
+  system: string;
+  prompt: string;
+  schema: S;
+  effort?: "low" | "medium" | "high";
 }
 
 /**
@@ -36,13 +53,7 @@ export async function generate<S extends z.ZodType>({
   prompt,
   schema,
   effort = "medium",
-}: {
-  model: string;
-  system: string;
-  prompt: string;
-  schema: S;
-  effort?: "low" | "medium" | "high";
-}): Promise<z.infer<S>> {
+}: GenerateArgs<S>): Promise<{ output: z.infer<S>; usage: AiUsage }> {
   try {
     const response = await getClient().beta.messages.parse({
       model,
@@ -53,10 +64,18 @@ export async function generate<S extends z.ZodType>({
       messages: [{ role: "user", content: prompt }],
       output_config: { effort, format: betaZodOutputFormat(schema) },
     });
-    if (response.stop_reason === "refusal") throw new AiError("The AI declined this request. Try rephrasing.", 422);
-    if (response.stop_reason === "max_tokens") throw new AiError("The AI response was too long. Try a smaller step.", 502);
-    if (response.parsed_output == null) throw new AiError("The AI returned an unexpected format. Please try again.", 502);
-    return response.parsed_output as z.infer<S>;
+    const usage: AiUsage = {
+      // The model that answered, which differs from the requested one after a fallback.
+      model: response.model,
+      // Cache writes cost a little more than plain input; they are counted as input here.
+      input_tokens: response.usage.input_tokens + (response.usage.cache_creation_input_tokens ?? 0),
+      output_tokens: response.usage.output_tokens,
+      cache_read_tokens: response.usage.cache_read_input_tokens ?? 0,
+    };
+    if (response.stop_reason === "refusal") throw new AiError("The AI declined this request. Try rephrasing.", 422, usage);
+    if (response.stop_reason === "max_tokens") throw new AiError("The AI response was too long. Try a smaller step.", 502, usage);
+    if (response.parsed_output == null) throw new AiError("The AI returned an unexpected format. Please try again.", 502, usage);
+    return { output: response.parsed_output as z.infer<S>, usage };
   } catch (e) {
     if (e instanceof AiError) throw e;
     if (e instanceof Anthropic.AuthenticationError) throw new AiError("The Anthropic API key is invalid.", 503);

@@ -13,7 +13,8 @@ export default async function LinksPage({ params }: PageProps<"/projects/[id]/li
     .from("client_links")
     .select("*")
     .eq("project_id", id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .overrideTypes<ClientLink[], { merge: false }>();
 
   const sections: SectionOption[] = analyses.flatMap((a) => {
     const def = getFramework(a.framework_key);
@@ -32,7 +33,7 @@ export default async function LinksPage({ params }: PageProps<"/projects/[id]/li
     <div className="max-w-5xl">
       <h2 className="text-lg font-semibold">{t("links.title")}</h2>
       <p className="mb-5 max-w-2xl text-sm text-muted">{t("links.intro")}</p>
-      <LinksManager projectId={id} sections={sections} links={(links ?? []) as ClientLink[]} />
+      <LinksManager projectId={id} sections={sections} links={links ?? []} />
     </div>
   );
 }

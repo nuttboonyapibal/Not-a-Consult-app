@@ -15,6 +15,15 @@ export const UI = {
 
   "login.title": { th: "เข้าสู่ระบบ", en: "Sign in" },
   "login.google": { th: "เข้าสู่ระบบด้วย Google", en: "Continue with Google" },
+  "login.or": { th: "หรือ", en: "or" },
+  "login.email": { th: "อีเมล", en: "Email" },
+  "login.emailSend": { th: "ส่งลิงก์เข้าสู่ระบบ", en: "Email me a sign-in link" },
+  "login.emailSending": { th: "กำลังส่ง…", en: "Sending…" },
+  "login.emailSent": {
+    th: "ส่งลิงก์ไปที่อีเมลแล้ว เปิดลิงก์ในเบราว์เซอร์นี้เพื่อเข้าสู่ระบบ",
+    en: "Check your inbox. Open the link in this browser to sign in.",
+  },
+  "login.emailFailed": { th: "ส่งลิงก์ไม่สำเร็จ", en: "Couldn't send the link" },
   "login.note": {
     th: "สำหรับทีม consult เท่านั้น ลูกค้าเข้าผ่านลิงก์ที่ทีมส่งให้",
     en: "For the consulting team only. Clients use the link the team sends them.",
@@ -291,8 +300,8 @@ export const UI = {
   "settings.title": { th: "ตั้งค่าทีม", en: "Team settings" },
   "settings.domains": { th: "โดเมนอีเมลที่ login ได้", en: "Email domains allowed to sign in" },
   "settings.domainsHelp": {
-    th: "คนที่ login ด้วย Google จากโดเมนเหล่านี้จะใช้งานได้ทันที คั่นด้วยจุลภาค เช่น company.com",
-    en: "Google sign-ins from these domains get access right away. Separate with commas, e.g. company.com",
+    th: "คนที่ login ครั้งแรก (Google หรือลิงก์ทางอีเมล) จากโดเมนเหล่านี้จะใช้งานได้ทันที คั่นด้วยจุลภาค เช่น company.com",
+    en: "First sign-ins (Google or email link) from these domains get access right away. Separate with commas, e.g. company.com",
   },
   "settings.members": { th: "สมาชิกทีม", en: "Team members" },
   "settings.role": { th: "บทบาท", en: "Role" },
@@ -300,6 +309,23 @@ export const UI = {
   "settings.admin": { th: "Admin", en: "Admin" },
   "settings.consultant": { th: "Consultant", en: "Consultant" },
   "settings.you": { th: "คุณ", en: "you" },
+  "settings.aiUsage": { th: "การใช้ AI 30 วันล่าสุด", en: "AI usage, last 30 days" },
+  "settings.aiUsageHelp": {
+    th: "ค่าใช้จ่ายเป็นค่าประมาณจากราคา Claude API ยอดจริงดูได้ที่ console.anthropic.com",
+    en: "Costs are estimates from Claude API list prices. See console.anthropic.com for actual billing.",
+  },
+  "settings.aiNone": { th: "ยังไม่มีการใช้ AI", en: "No AI requests yet" },
+  "settings.aiRequests": { th: "จำนวนครั้ง", en: "Requests" },
+  "settings.aiFailed": { th: "ไม่สำเร็จ", en: "failed" },
+  "settings.aiTokensIn": { th: "Token ขาเข้า", en: "Input tokens" },
+  "settings.aiTokensOut": { th: "Token ขาออก", en: "Output tokens" },
+  "settings.aiCost": { th: "ค่าใช้จ่ายโดยประมาณ", en: "Est. cost" },
+  "settings.aiTotal": { th: "รวม", en: "Total" },
+  "settings.aiFormerMember": { th: "สมาชิกที่ถูกลบ", en: "Removed member" },
+  "settings.aiUnpriced": {
+    th: "บางคำขอใช้ model ที่ไม่มีราคาในระบบ จึงไม่รวมในค่าใช้จ่าย",
+    en: "Some requests used a model without a listed price and aren't in the cost.",
+  },
 
   "lang.switch": { th: "English", en: "ภาษาไทย" },
 

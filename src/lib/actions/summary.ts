@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getProject, getProjectContent, getSummary, requireMember } from "@/lib/dal";
-import type { ReportSnapshot } from "@/lib/types";
+import { toJson, type ReportSnapshot } from "@/lib/types";
 import { fail, ok, type ActionResult } from "./result";
 
 const SummaryInput = z.object({
@@ -66,7 +66,7 @@ export async function publishReport(projectId: string): Promise<ActionResult<{ t
     const { error } = await supabase.from("report_publications").insert({
       project_id: projectId,
       token,
-      snapshot,
+      snapshot: toJson(snapshot),
       lang: project.report_lang,
       published_by: user.id,
     });

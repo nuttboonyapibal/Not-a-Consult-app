@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { CATALOG, CATEGORIES } from "@/frameworks/catalog";
-import { generate, MODELS } from "@/lib/ai/client";
+import { MODELS } from "@/lib/ai/client";
 import { describeProfile, languageLine, SYSTEM_PROMPT } from "@/lib/ai/prompts";
-import { aiErrorResponse, loadAiProject } from "@/lib/ai/route-helpers";
+import { aiErrorResponse, generateLogged, loadAiProject } from "@/lib/ai/route-helpers";
 
 export const maxDuration = 60;
 
@@ -23,11 +23,11 @@ const Output = z.object({
 export async function POST(request: Request) {
   try {
     const body = Body.parse(await request.json());
-    const { project } = await loadAiProject(body.projectId);
+    const { supabase, project } = await loadAiProject(body.projectId);
     const lang = project.report_lang;
     const category = CATEGORIES.find((c) => c.key === body.category);
 
-    const result = await generate({
+    const result = await generateLogged(supabase, { projectId: project.id, kind: "recommend" }, {
       model: MODELS.assist,
       system: SYSTEM_PROMPT,
       schema: Output,
