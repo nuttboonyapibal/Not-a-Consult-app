@@ -32,3 +32,15 @@ export function createAnonClient() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
+
+/** Sign-in providers switched on in Supabase Auth (public settings, cached for a minute). */
+export async function enabledProviders() {
+  try {
+    const res = await fetch(`${supabaseUrl()}/auth/v1/settings`, { headers: { apikey: supabaseKey() }, next: { revalidate: 60 } });
+    if (!res.ok) return { google: false };
+    const settings = (await res.json()) as { external?: Record<string, boolean> };
+    return { google: settings.external?.google === true };
+  } catch {
+    return { google: false };
+  }
+}

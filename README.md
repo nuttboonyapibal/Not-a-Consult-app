@@ -31,7 +31,7 @@ Open http://localhost:3000/demo. The demo walks through the real screens (questi
 
 1. **Supabase**: create a project, then run every file in `supabase/migrations/` in order (in the SQL editor, or with `supabase db push`). Tables are only reachable through the grants in these files, so don't skip any.
 2. **Sign-in URLs**: in Supabase → Authentication → URL Configuration, set the Site URL to your app URL and add your app URLs to Redirect URLs (e.g. `http://localhost:3000/**`, your Vercel URL). Email links work from here with Supabase's built-in mailer, which sends only a few emails an hour; set up custom SMTP (Authentication → Emails) before inviting the team.
-3. **Google sign-in** (optional): in Supabase → Authentication → Providers, enable Google with an OAuth client from Google Cloud Console, and add `https://<your-project>.supabase.co/auth/v1/callback` as the authorized redirect URI in Google.
+3. **Google sign-in** (optional): in Supabase → Authentication → Providers, enable Google with an OAuth client from Google Cloud Console, and add `https://<your-project>.supabase.co/auth/v1/callback` as the authorized redirect URI in Google. The Google button shows on the sign-in page once the provider is on.
 4. **Environment**: copy `.env.example` to `.env.local` and fill in the values (Supabase → Project Settings → API keys).
 5. Run:
 

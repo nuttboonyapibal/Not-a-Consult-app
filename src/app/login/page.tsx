@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { enabledProviders } from "@/lib/supabase/server";
 import { LangSwitch } from "@/components/lang-switch";
 import { EmailLink } from "./email-link";
 import { GoogleButton } from "./google-button";
@@ -11,6 +12,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { t } = await getT();
   const { next, error } = await searchParams;
   const nextPath = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  // The Google button only shows once the provider is on in Supabase.
+  const { google } = isSupabaseConfigured() ? await enabledProviders() : { google: false };
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="absolute top-4 right-4">
@@ -26,12 +29,16 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           {error && <p className="mb-4 rounded-lg bg-err-soft px-3 py-2 text-sm text-err">{t("login.error")}</p>}
           {isSupabaseConfigured() ? (
             <div className="space-y-4">
-              <GoogleButton next={nextPath} label={t("login.google")} />
-              <div className="flex items-center gap-3 text-xs text-muted">
-                <span className="h-px flex-1 bg-line" />
-                {t("login.or")}
-                <span className="h-px flex-1 bg-line" />
-              </div>
+              {google && (
+                <>
+                  <GoogleButton next={nextPath} label={t("login.google")} />
+                  <div className="flex items-center gap-3 text-xs text-muted">
+                    <span className="h-px flex-1 bg-line" />
+                    {t("login.or")}
+                    <span className="h-px flex-1 bg-line" />
+                  </div>
+                </>
+              )}
               <EmailLink next={nextPath} />
             </div>
           ) : (
