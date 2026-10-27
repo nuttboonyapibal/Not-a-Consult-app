@@ -4,10 +4,11 @@ Web app for a consulting team to analyze client businesses with the frameworks f
 
 ## What's in Phase 1
 
-- Team sign-in with Google or an emailed link, roles Admin / Consultant, allowed email domains
+- Team sign-in with Google or an emailed 6-digit code (or link), roles Admin / Consultant, allowed email domains
 - Clients → projects → business questions → 1–3 frameworks per question
 - Business profile filled once per project and reused by frameworks
-- Question wizard: pick the category, get rule-based suggestions by stage and keywords, or ask AI; or choose any framework from the library
+- Project checklist: business profile → frameworks → client link (optional) → summary → report, with a button for the next step
+- Question wizard in two steps: write the question, then pick frameworks from rule-based suggestions (filtered by a guessed category you can change), AI suggestions, or the whole library
 - All 35 frameworks in the library. 19 open as a canvas you edit in place: JTBD, Business Model Canvas, Unit Economics, Playing to Win, AARRR, OKRs, MECE / Issue Tree, Lean Canvas, Value Proposition Canvas, SWOT→TOWS, Blue Ocean ERRC, Ansoff, BCG, PESTEL, Five Forces, McKinsey 7S, 4P/7P, Balanced Scorecard and 7 Powers. The other 16 use a general form until Phase 2
 - On the canvas: click a field to add, edit or remove items in place; numbers show the suggested order; drag items between fields; give related items the same link color; a side panel shows the selected field's hint, example, checks and AI draft. The step-by-step form is still one click away
 - Helpers while filling: hints, examples, the cheat sheet's common trap, automatic checks, a filled example; with AI on, draft one field, every empty field or a whole step, and "review"
@@ -30,7 +31,8 @@ Open http://localhost:3000/demo. The demo walks through the real screens (questi
 ## Setup
 
 1. **Supabase**: create a project, then run every file in `supabase/migrations/` in order (in the SQL editor, or with `supabase db push`). Tables are only reachable through the grants in these files, so don't skip any.
-2. **Sign-in URLs**: in Supabase → Authentication → URL Configuration, set the Site URL to your app URL and add your app URLs to Redirect URLs (e.g. `http://localhost:3000/**`, your Vercel URL). Email links work from here with Supabase's built-in mailer, which sends only a few emails an hour; set up custom SMTP (Authentication → Emails) before inviting the team.
+2. **Sign-in URLs**: in Supabase → Authentication → URL Configuration, set the Site URL to your app URL and add your app URLs to Redirect URLs (e.g. `http://localhost:3000/**`, your Vercel URL). Email sign-in works from here with Supabase's built-in mailer, which sends only a few emails an hour; set up custom SMTP (Authentication → Emails) before inviting the team.
+   - **Sign-in code**: in Authentication → Emails → Templates, paste `supabase/templates/magic_link.html` into **Magic link** and `supabase/templates/confirmation.html` into **Confirm signup** (first sign-ins use that one). The emails then carry a 6-digit code that works on any device, as well as the link, which only works in the browser that asked for it.
 3. **Google sign-in** (optional): in Supabase → Authentication → Providers, enable Google with an OAuth client from Google Cloud Console, and add `https://<your-project>.supabase.co/auth/v1/callback` as the authorized redirect URI in Google. The Google button shows on the sign-in page once the provider is on.
 4. **Environment**: copy `.env.example` to `.env.local` and fill in the values (Supabase → Project Settings → API keys).
 5. Run:
