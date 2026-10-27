@@ -4,7 +4,7 @@ Web app for a consulting team to analyze client businesses with the frameworks f
 
 ## What's in Phase 1
 
-- Team sign-in with Google or an emailed link, roles Admin / Consultant, allowed email domains
+- Team sign-in with a username and password, no email involved: people sign up and wait for an admin to approve them; admins set new passwords, everyone can change their own; roles Admin / Consultant
 - Clients → projects → business questions → 1–3 frameworks per question
 - Business profile filled once per project and reused by frameworks
 - Question wizard: pick the category, get rule-based suggestions by stage and keywords, or ask AI; or choose any framework from the library
@@ -30,21 +30,22 @@ Open http://localhost:3000/demo. The demo walks through the real screens (questi
 ## Setup
 
 1. **Supabase**: create a project, then run every file in `supabase/migrations/` in order (in the SQL editor, or with `supabase db push`). Tables are only reachable through the grants in these files, so don't skip any.
-2. **Sign-in URLs**: in Supabase → Authentication → URL Configuration, set the Site URL to your app URL and add your app URLs to Redirect URLs (e.g. `http://localhost:3000/**`, your Vercel URL). Email links work from here with Supabase's built-in mailer, which sends only a few emails an hour; set up custom SMTP (Authentication → Emails) before inviting the team.
-3. **Google sign-in** (optional): in Supabase → Authentication → Providers, enable Google with an OAuth client from Google Cloud Console, and add `https://<your-project>.supabase.co/auth/v1/callback` as the authorized redirect URI in Google. The Google button shows on the sign-in page once the provider is on.
-4. **Environment**: copy `.env.example` to `.env.local` and fill in the values (Supabase → Project Settings → API keys).
-5. Run:
+2. **Sign-in settings**: in Supabase → Authentication → Sign In / Providers, keep the **Email** provider on (password sign-in runs on it) and turn off **Allow new users to sign up**. The app creates accounts itself with the secret key, so nothing else can, and no email is ever sent.
+3. **Environment**: copy `.env.example` to `.env.local` and fill in the values (Supabase → Project Settings → API keys). `SUPABASE_SECRET_KEY` is a server-only secret: never prefix it with `NEXT_PUBLIC_` or commit it.
+4. Run:
 
    ```bash
    npm install
    npm run dev
    ```
 
-6. The first person to sign in becomes the admin. Open **Team settings** and add your company email domain so teammates get access when they sign in.
+5. Open `/signup`. The first account becomes the admin; everyone after that waits until an admin ticks **Active** in **Team settings**.
+
+**Usernames and passwords.** Supabase Auth keys accounts by email, so the app maps each username to `<username>@<project>.supabase.co`, an address nobody can receive mail at. Admins set a new password for anyone from Team settings. If an admin forgets their own password, or to move an account made before usernames existed, run `npm run set-login` in your own terminal: it lists the accounts and asks for a username and a hidden password.
 
 ## Deploying to Vercel
 
-Import the GitHub repo in Vercel, add the same environment variables, deploy, then add the Vercel URL to Supabase's redirect URLs.
+Import the GitHub repo in Vercel, add the same environment variables (including `SUPABASE_SECRET_KEY`, as a sensitive variable) and deploy.
 
 ## Tests
 

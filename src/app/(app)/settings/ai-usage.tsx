@@ -3,6 +3,7 @@ import { Card } from "@/components/ui";
 import type { Database } from "@/lib/database.types";
 import { estimateCostUsd } from "@/lib/ai/pricing";
 import { UI, type UiKey } from "@/lib/i18n/ui";
+import { displayName } from "@/lib/auth/username";
 import type { Profile } from "@/lib/types";
 
 type UsageRow = Database["public"]["Functions"]["ai_usage_summary"]["Returns"][number];
@@ -44,7 +45,7 @@ export function AiUsage({ rows, people, lang }: { rows: UsageRow[]; people: Prof
   }
   const name = (id: string) => {
     const p = people.find((x) => x.id === id);
-    return p ? (p.full_name ?? p.email) : t("settings.aiFormerMember");
+    return p ? displayName(p) : t("settings.aiFormerMember");
   };
 
   return (

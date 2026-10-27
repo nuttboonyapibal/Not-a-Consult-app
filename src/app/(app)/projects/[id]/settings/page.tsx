@@ -14,7 +14,7 @@ export default async function ProjectSettingsPage({ params }: PageProps<"/projec
     supabase.from(table).select("id", { count: "exact", head: true }).eq("project_id", id);
   const [{ data: members }, { data: team }, questions, analyses, { data: links }, { data: reports }] = await Promise.all([
     supabase.from("project_members").select("user_id").eq("project_id", id),
-    supabase.from("profiles").select("id, email, full_name, role, active").eq("active", true).order("email"),
+    supabase.from("profiles").select("id, email, username, full_name, role, active").eq("active", true).order("email"),
     count("questions"),
     count("analyses"),
     supabase.from("client_links").select("id").eq("project_id", id).is("revoked_at", null),
