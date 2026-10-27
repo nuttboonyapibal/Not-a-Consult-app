@@ -9,6 +9,7 @@ export const UI = {
   },
 
   "nav.dashboard": { th: "ลูกค้าและโปรเจกต์", en: "Clients & projects" },
+  "nav.clients": { th: "จัดการลูกค้า", en: "Manage clients" },
   "nav.library": { th: "คลัง framework", en: "Framework library" },
   "nav.settings": { th: "ตั้งค่าทีม", en: "Team settings" },
   "nav.signOut": { th: "ออกจากระบบ", en: "Sign out" },
@@ -138,6 +139,19 @@ export const UI = {
   "project.deleteProject": { th: "ลบโปรเจกต์", en: "Delete project" },
   "project.status": { th: "สถานะโปรเจกต์", en: "Project status" },
   "client.delete": { th: "ลบลูกค้า", en: "Delete client" },
+
+  "clients.title": { th: "จัดการลูกค้า", en: "Manage clients" },
+  "clients.intro": {
+    th: "ลูกค้าทั้งหมดที่คุณเห็น แก้ชื่อหรือลบได้เฉพาะลูกค้าที่คุณสร้าง หรือทุกรายถ้าเป็น admin",
+    en: "Every client you can see. You can rename or delete the ones you created, or any client as an admin.",
+  },
+  "clients.search": { th: "ค้นหาลูกค้า", en: "Search clients" },
+  "clients.client": { th: "ลูกค้า", en: "Client" },
+  "clients.createdBy": { th: "สร้างโดย", en: "Created by" },
+  "clients.created": { th: "สร้างเมื่อ", en: "Created" },
+  "clients.none": { th: "ไม่พบลูกค้าที่ตรงกับคำค้น", en: "No clients match your search" },
+  "clients.readOnly": { th: "ดูได้อย่างเดียว", en: "View only" },
+  "clients.onlyOwner": { th: "แก้หรือลบได้เฉพาะผู้สร้างลูกค้าหรือ admin", en: "Only the client's creator or an admin can change or delete it" },
 
   "delete.willRemove": { th: "จะลบสิ่งต่อไปนี้ถาวร ย้อนกลับไม่ได้", en: "This permanently deletes the following. It can't be undone." },
   "delete.typeName": { th: "พิมพ์ชื่อเพื่อยืนยัน:", en: "Type the name to confirm:" },

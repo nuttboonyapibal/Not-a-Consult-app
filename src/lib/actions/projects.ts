@@ -21,6 +21,27 @@ export async function createClientAction(formData: FormData) {
   const { error } = await supabase.from("clients").insert({ ...input, created_by: user.id });
   if (error) throw new Error(error.message);
   revalidatePath("/");
+  revalidatePath("/clients");
+}
+
+/** Renames a client or changes its industry; RLS allows the creator or an admin. */
+export async function updateClientAction(clientId: string, input: { name: string; industry: string }): Promise<ActionResult> {
+  try {
+    const { supabase } = await requireMember();
+    const { name, industry } = ClientInput.parse({ name: input.name, industry: input.industry || undefined });
+    const { data, error } = await supabase
+      .from("clients")
+      .update({ name, industry: industry ?? null })
+      .eq("id", z.uuid().parse(clientId))
+      .select("id");
+    if (error) throw new Error(error.message);
+    if (!data.length) throw new Error(NOT_ALLOWED);
+    revalidatePath("/");
+    revalidatePath("/clients", "layout");
+    return ok(undefined);
+  } catch (e) {
+    return fail(e);
+  }
 }
 
 const ProjectInput = z.object({
@@ -110,7 +131,8 @@ export async function deleteProject(projectId: string): Promise<ActionResult> {
 }
 
 /** Deletes the client and every project under it (see 0005_safe_client_delete.sql for who may). */
-export async function deleteClientAction(clientId: string): Promise<ActionResult> {
+export async function deleteClientAction(clientId: string, returnTo: "/" | "/clients" = "/"): Promise<ActionResult> {
+  const destination = z.enum(["/", "/clients"]).parse(returnTo);
   try {
     const { supabase } = await requireMember();
     const { data, error } = await supabase.from("clients").delete().eq("id", z.uuid().parse(clientId)).select("id");
@@ -120,7 +142,8 @@ export async function deleteClientAction(clientId: string): Promise<ActionResult
     return fail(e);
   }
   revalidatePath("/");
-  redirect("/");
+  revalidatePath("/clients");
+  redirect(destination);
 }
 
 export async function patchProfile(projectId: string, patch: Record<string, unknown>): Promise<ActionResult> {
