@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { StagePicker } from "@/components/stage-picker";
 import { Button, Card, Input, Label, Select } from "@/components/ui";
-import { addMember, deleteProject, removeMember, updateProjectSettings } from "@/lib/actions/projects";
+import { addMember, removeMember, updateProjectSettings } from "@/lib/actions/projects";
 import { useT } from "@/lib/i18n/client";
 import type { Profile, Project } from "@/lib/types";
 
@@ -14,12 +14,10 @@ export function ProjectSettingsForm({
   project,
   team,
   memberIds,
-  canDelete,
 }: {
   project: Project;
   team: Profile[];
   memberIds: string[];
-  canDelete: boolean;
 }) {
   const { t } = useT();
   const router = useRouter();
@@ -143,19 +141,6 @@ export function ProjectSettingsForm({
         )}
       </Card>
 
-      {canDelete && (
-        <div className="flex justify-end">
-          <Button
-            variant="danger"
-            disabled={pending}
-            onClick={() => {
-              if (confirm(t("common.confirmDelete"))) start(() => deleteProject(project.id));
-            }}
-          >
-            {t("project.deleteProject")}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

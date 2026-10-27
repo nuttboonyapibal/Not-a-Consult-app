@@ -7,7 +7,7 @@ import type { Client, Project } from "@/lib/types";
 import { NewClientForm } from "./new-client-form";
 
 export default async function DashboardPage() {
-  const { supabase } = await requireMember();
+  const { supabase, profile: me } = await requireMember();
   const { t } = await getT();
   const [{ data: clients }, { data: projects }] = await Promise.all([
     supabase.from("clients").select("*").order("created_at", { ascending: false }),
@@ -54,9 +54,16 @@ export default async function DashboardPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={`/clients/${client.id}`} className="mt-3 text-sm font-medium text-accent hover:underline">
-                  + {t("dash.newProject")}
-                </Link>
+                <div className="mt-3 flex items-center justify-between gap-2 text-sm">
+                  <Link href={`/clients/${client.id}`} className="font-medium text-accent hover:underline">
+                    + {t("dash.newProject")}
+                  </Link>
+                  {(me.role === "admin" || client.created_by === me.id) && (
+                    <Link href={`/clients/${client.id}#delete`} className="text-faint hover:text-err">
+                      {t("common.delete")}
+                    </Link>
+                  )}
+                </div>
               </Card>
             );
           })}
