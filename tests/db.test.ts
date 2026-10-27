@@ -417,6 +417,15 @@ describe("deleting clients and projects", () => {
     expect(await deleted(ALICE, "projects", project)).toBe(1);
   });
 
+  it("lets only the creator or an admin rename a client", async () => {
+    const client = await newClient(ALICE, "Rename me");
+    const renamed = (uid: string, name: string) =>
+      asUser(uid, async () => (await rows("update public.clients set name = $1 where id = $2 returning id", [name, client])).length);
+    expect(await renamed(BOB, "Bob's name")).toBe(0);
+    expect(await renamed(ALICE, "Alice's name")).toBe(1);
+    expect(await renamed(ADMIN, "Admin's name")).toBe(1);
+  });
+
   it("never lets other consultants delete a client", async () => {
     const client = await newClient(ALICE, "Private");
     expect(await deleted(BOB, "clients", client)).toBe(0);

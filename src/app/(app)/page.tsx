@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, Empty, PageHeader } from "@/components/ui";
+import { Badge, ButtonLink, Card, Empty, PageHeader } from "@/components/ui";
 import { StatusBadge } from "@/components/status";
 import { requireMember } from "@/lib/dal";
 import { getT } from "@/lib/i18n/server";
@@ -20,7 +20,17 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader title={t("dash.title")} actions={<NewClientForm />} />
+      <PageHeader
+        title={t("dash.title")}
+        actions={
+          <>
+            <ButtonLink href="/clients" variant="secondary">
+              {t("nav.clients")}
+            </ButtonLink>
+            <NewClientForm />
+          </>
+        }
+      />
       {!clients?.length ? (
         <Empty>{t("dash.empty")}</Empty>
       ) : (
